@@ -1,0 +1,35 @@
+services:
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: ../../infra/docker/web.Dockerfile
+    ports:
+      - "6000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - api
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: ../../infra/docker/api.Dockerfile
+    ports:
+      - "6001:8000"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+
+  renderer:
+    build:
+      context: ./services/renderer
+      dockerfile: ../../infra/docker/renderer.Dockerfile
+    ports:
+      - "6002:4000"
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6003:6379"
