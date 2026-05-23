@@ -6,30 +6,39 @@ services:
       dockerfile: ../../infra/docker/web.Dockerfile
     ports:
       - "6000:3000"
-    env_file:
-      - .env
+    networks:
+      - dev-net
+    volumes:
+      - ./apps/web:/app
+      - /app/node_modules             # anonymous volume so container's node_modules win
+    environment:
+      - NODE_ENV=development
+    # env_file:
+    #   - ./apps/web/.env
     depends_on:
-      - api
+      api:
+        condition: service_healthy    # wait for api to be ready
 
   api:
     build:
       context: ./apps/api
-      dockerfile: ../../infra/docker/api.Dockerfile
+      dockerfile: ../../infra/docker/api.dev.Dockerfile
     ports:
       - "6001:8000"
-    env_file:
-      - .env
-    depends_on:
-      - redis
+    # env_file:
+    #   - ./apps/api/.env
+    platform: linux/amd64 # Patch for M1 Mac
+    networks:
+      - dev-net
+    volumes:
+      - ./apps/api/:/app
+      - /app/.venv
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  renderer:
-    build:
-      context: ./services/renderer
-      dockerfile: ../../infra/docker/renderer.Dockerfile
-    ports:
-      - "6002:4000"
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6003:6379"
+networks:
+  dev-net:
+    external: true
