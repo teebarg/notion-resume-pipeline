@@ -4,7 +4,7 @@ from app.schemas.resume import ResumeData
 from app.services.notion_client import NotionAPIError, NotionClient
 from typing import Any
  
-from app.schemas.notion import ResumeSchema
+from app.schemas.notion import ResumeData
 from app.services.mapper import map_to_resume
 from app.services.notion_client import NotionAPIError, NotionClient
 from app.services.parser import parse_blocks
@@ -16,13 +16,13 @@ class NotionImportError(Exception):
     """Raised when Notion import fails for a known reason."""
  
  
-async def import_resume_from_notion(page_id: str) -> ResumeSchema:
+async def import_resume_from_notion(page_id: str) -> ResumeData:
     """
     Full pipeline:
       1. Authenticate + fetch Notion page metadata.
       2. Recursively fetch all blocks.
       3. Parse blocks into ContentNodes.
-      4. Map ContentNodes into ResumeSchema.
+      4. Map ContentNodes into ResumeData.
     """
     client = NotionClient()
  
@@ -30,6 +30,7 @@ async def import_resume_from_notion(page_id: str) -> ResumeSchema:
     page_meta: dict[str, Any] | None = None
     try:
         page_meta = await client.get_page(page_id)
+        logger.debug(f"[page_meta]-----------------------------------: {page_meta}")
     except NotionAPIError as exc:
         if exc.status_code == 404:
             raise NotionImportError(
@@ -45,6 +46,7 @@ async def import_resume_from_notion(page_id: str) -> ResumeSchema:
     # Fetch blocks recursively
     try:
         raw_blocks = await client.get_blocks_recursive(page_id)
+        logger.debug(f"[raw_blocks]------------------------------------------: {raw_blocks}")
     except NotionAPIError as exc:
         raise NotionImportError(
             f"Failed to fetch blocks for page '{page_id}': {exc}"
@@ -52,7 +54,7 @@ async def import_resume_from_notion(page_id: str) -> ResumeSchema:
  
     if not raw_blocks:
         logger.info("Notion page '%s' returned no blocks; returning empty resume.", page_id)
-        return ResumeSchema()
+        return ResumeData()
  
     # Parse + map
     nodes = parse_blocks(raw_blocks)

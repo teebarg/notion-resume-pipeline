@@ -10,7 +10,7 @@ Responsibilities:
 import asyncio
 from typing import Any
 
-from apps.api.app.config import settings
+from app.config import settings
 import httpx
 from app.core.logging import get_logger
 

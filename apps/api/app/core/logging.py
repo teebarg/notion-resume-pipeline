@@ -250,7 +250,7 @@ LOGGING_CONFIG: dict = {
         },
         # Application logger: full pipeline including Slack
         "app": {
-            "handlers": ["console", "slack_alerts"],
+            "handlers": ["console"],
             "level": "DEBUG",
             "propagate": False,
         },

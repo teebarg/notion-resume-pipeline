@@ -1,8 +1,26 @@
 from functools import lru_cache
-from typing import Literal
 
-from pydantic import Field, field_validator
+from typing import Annotated, Any, Literal
+from pydantic import (
+    AnyUrl,
+    BeforeValidator,
+    EmailStr,
+    HttpUrl,
+    PostgresDsn,
+    ValidationInfo,
+    computed_field,
+    Field,
+    field_validator,
+)
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def parse_cors(v: Any) -> list[str] | str:
+    if isinstance(v, str) and not v.startswith("["):
+        return [i.strip() for i in v.split(",")]
+    elif isinstance(v, list | str):
+        return v
+    raise ValueError(v)
 
 
 class Settings(BaseSettings):
@@ -22,8 +40,6 @@ class Settings(BaseSettings):
     port: int = 8000
     api_v1_prefix: str = "/api/v1"
 
-    cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:3000"])
-
     redis_url: str = "redis://localhost:6379/0"
     redis_job_queue: str = "resume_jobs"
 
@@ -33,12 +49,18 @@ class Settings(BaseSettings):
     job_result_ttl_seconds: int = 86400
     job_poll_interval_ms: int = 500
 
-    @field_validator("cors_origins", mode="before")
-    @classmethod
-    def parse_cors_origins(cls, value: str | list[str]) -> list[str]:
-        if isinstance(value, str):
-            return [origin.strip() for origin in value.split(",") if origin.strip()]
-        return value
+    # BACKEND_CORS_ORIGINS is a JSON-formatted list of origins
+    # e.g: '["http://localhost"]'
+    BACKEND_CORS_ORIGINS: Annotated[list[AnyUrl] | str, BeforeValidator(parse_cors)] = (
+        []
+    )
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def all_cors_origins(self) -> list[str]:
+        return [str(origin).rstrip("/") for origin in self.BACKEND_CORS_ORIGINS] + [
+            self.FRONTEND_HOST
+        ]
 
     @property
     def is_production(self) -> bool:
