@@ -1,15 +1,17 @@
 from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
 
+from app.schemas.common import HealthResponse
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
 from app.config import settings
 from app.core.logging import close_http_client, get_logger, setup_logging
-from app.core.redis import close_redis, init_redis
+from app.core.redis import close_redis, init_redis, get_redis
 from app.routers import api_router
+from redis.asyncio import Redis
 
 logger = get_logger(__name__)
 
@@ -49,3 +51,21 @@ async def root() -> dict[str, str]:
         "version": __version__,
         "docs": "/docs",
     }
+
+
+@app.get("/health", tags=["System"])
+async def health_check(redis: Redis = Depends(get_redis)) -> HealthResponse:
+    """
+    Health check endpoint.
+    """
+    checks = {}
+
+    try:
+        redis.ping()
+        checks["redis"] = "ok"
+    except Exception as e:
+        checks["redis"] = "error"
+        logger.error(f"error: {str(e)[:50]}")
+
+    healthy = all(v == "ok" for v in checks.values())
+    return HealthResponse(status="ok" if healthy else "degraded", checks=checks)

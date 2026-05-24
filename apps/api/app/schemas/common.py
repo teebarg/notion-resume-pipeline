@@ -15,3 +15,7 @@ class ErrorResponse(BaseModel):
     detail: str
     code: str | None = None
     errors: list[dict[str, str]] = Field(default_factory=list)
+
+class HealthResponse(BaseModel):
+    status: str
+    checks: dict

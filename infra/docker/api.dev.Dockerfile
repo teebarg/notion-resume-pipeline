@@ -70,6 +70,8 @@ WORKDIR /app
 
 ENV PATH="/app/.venv/bin:$PATH"
 
+COPY pyproject.toml uv.lock ./
+
 # Install dependencies first (better caching)
 RUN --mount=type=cache,target=/root/.cache/uv \
     --mount=type=bind,source=uv.lock,target=uv.lock \
@@ -85,4 +87,5 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 EXPOSE 8000
 
-CMD ["fastapi", "run", "app/main.py", "--host", "0.0.0.0", "--port", "8000"]
+# CMD ["fastapi", "run", "app/main.py", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]
