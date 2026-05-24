@@ -62,6 +62,12 @@ dev-api:
 dev-renderer:
 	cd services/renderer && node server.js
 
+activate-env-windows:
+	cd apps/api && .venv\Scripts\Activate.ps1
+
+activate-env:
+	cd apps/api && source .venv/bin/activate
+
 # ----------------------------
 # Build
 # ----------------------------
