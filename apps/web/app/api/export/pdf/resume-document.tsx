@@ -205,8 +205,8 @@ export function ResumeDocument({ data, template }: ResumeDocumentProps) {
         {data.experience.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Experience</Text>
-            {data.experience.map((exp) => (
-              <View key={exp.id} style={styles.experienceItem}>
+            {data.experience?.map((exp, i: number) => (
+              <View key={i} style={styles.experienceItem}>
                 <View style={styles.experienceHeader}>
                   <View>
                     <Text style={styles.experiencePosition}>{exp.position}</Text>
@@ -218,7 +218,7 @@ export function ResumeDocument({ data, template }: ResumeDocumentProps) {
                   </Text>
                 </View>
                 <View style={styles.bulletList}>
-                  {exp.description.map((item, i) => (
+                  {exp.description?.map((item, i) => (
                     <View key={i} style={styles.bulletItem}>
                       <Text style={styles.bullet}>•</Text>
                       <Text style={styles.bulletText}>{item}</Text>
@@ -235,7 +235,7 @@ export function ResumeDocument({ data, template }: ResumeDocumentProps) {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Skills</Text>
             <View style={styles.skillsContainer}>
-              {data.skills.map((skill, i) => (
+              {data.skills?.map((skill, i) => (
                 <Text key={i} style={styles.skillTag}>{skill}</Text>
               ))}
             </View>
@@ -246,7 +246,7 @@ export function ResumeDocument({ data, template }: ResumeDocumentProps) {
         {data.projects.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Projects</Text>
-            {data.projects.map((project) => (
+            {data.projects?.map((project) => (
               <View key={project.id} style={styles.projectItem}>
                 <Text style={styles.projectName}>{project.name}</Text>
                 <Text style={styles.projectDescription}>{project.description}</Text>
@@ -262,7 +262,7 @@ export function ResumeDocument({ data, template }: ResumeDocumentProps) {
         {data.education.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Education</Text>
-            {data.education.map((edu) => (
+            {data.education?.map((edu) => (
               <View key={edu.id} style={styles.educationItem}>
                 <View style={styles.experienceHeader}>
                   <View>

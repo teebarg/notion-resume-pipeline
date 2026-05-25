@@ -1,9 +1,9 @@
 {
-  "name": "my-project",
+  "name": "notion-resume",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --webpack",
     "dev-d": "next dev --host",
     "build": "next build",
     "start": "next start",

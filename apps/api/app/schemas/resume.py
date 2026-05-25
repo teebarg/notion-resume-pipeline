@@ -4,18 +4,6 @@ from pydantic import BaseModel, Field
 
 TemplateId = Literal["minimal", "modern", "classic", "developer"]
 
-
-class Education(BaseModel):
-    id: str
-    institution: str
-    degree: str
-    field: str = ""
-    start_date: str = Field(alias="startDate", default="")
-    end_date: str = Field(alias="endDate", default="")
-    gpa: str | None = None
-
-    model_config = {"populate_by_name": True}
-
 class Basics(BaseModel):
     name: str = ""
     title: str = ""
@@ -46,6 +34,7 @@ class Project(BaseModel):
 
 class Education(BaseModel):
     degree: str = ""
+    field: str = ""
     institution: str = ""
     startDate: str = ""
     endDate: str = ""

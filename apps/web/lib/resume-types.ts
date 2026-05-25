@@ -1,49 +1,56 @@
-export interface ResumeData {
-  name: string
-  title: string
-  email: string
-  phone: string
-  location: string
-  website: string
-  linkedin: string
-  github: string
-  summary: string
-  experience: Experience[]
-  education: Education[]
-  skills: string[]
-  projects: Project[]
+export interface Basics {
+  name: string;
+  title: string;
+  summary: string;
+  email: string;
+  location: string;
+  website: string;
+  linkedin: string;
+  github: string;
 }
 
 export interface Experience {
-  id: string
-  company: string
-  position: string
-  location: string
-  startDate: string
-  endDate: string
-  current: boolean
-  description: string[]
+  company: string;
+  role: string;
+  location: string;
+  startDate: string;
+  endDate: string;
+  current: boolean;
+  highlights: string[];
+}
+
+
+export interface Project {
+  name: string;
+  description: string;
+  tech: string[];
+  link?: string | null;
 }
 
 export interface Education {
-  id: string
-  institution: string
-  degree: string
-  field: string
-  startDate: string
-  endDate: string
-  gpa?: string
+  degree: string;
+  field: string;
+  institution: string;
+  startDate: string;
+  endDate: string;
 }
 
-export interface Project {
-  id: string
-  name: string
-  description: string
-  technologies: string[]
-  link?: string
+export interface Skill {
+  name: string;
+  stack: string[];
 }
 
-export type TemplateId = 'minimal' | 'modern' | 'classic' | 'developer'
+
+export interface ResumeData {
+  basics: Basics;
+  experience: Experience[];
+  education: Education[];
+  skills: Skill[];
+  projects: Project[];
+}
+
+
+export type TemplateId = "minimal" | "modern" | "classic" | "developer";
 
 export interface Template {
   id: TemplateId
@@ -80,15 +87,17 @@ export const templates: Template[] = [
 ]
 
 export const defaultResumeData: ResumeData = {
-  name: '',
-  title: '',
-  email: '',
-  phone: '',
-  location: '',
-  website: '',
-  linkedin: '',
-  github: '',
-  summary: '',
+  basics: {
+    name: '',
+    title: '',
+    email: '',
+    // phone: '',
+    location: '',
+    website: '',
+    linkedin: '',
+    github: '',
+    summary: '',
+  },
   experience: [],
   education: [],
   skills: [],

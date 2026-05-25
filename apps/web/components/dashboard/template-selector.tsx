@@ -21,7 +21,7 @@ export function TemplateSelector({ selected, onSelect }: TemplateSelectorProps) 
     <div className="space-y-3">
       <h3 className="text-sm font-medium text-muted-foreground">Template</h3>
       <div className="grid grid-cols-2 gap-3">
-        {templates.map((template) => {
+        {templates?.map((template) => {
           const isSelected = selected === template.id
           const styles = templateStyles[template.id]
           

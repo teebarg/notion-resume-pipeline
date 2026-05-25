@@ -65,6 +65,7 @@ export function NotionImport({ onImport }: NotionImportProps) {
       }
 
       const data = await response.json()
+      console.log("data...........", data)
       onImport(data.resume)
       setStatus('success')
 

@@ -6,6 +6,7 @@ from typing import Any
  
 from app.services.mapper import map_to_resume
 from app.services.parser import parse_blocks
+from app.core.cache import cache_response
 
 logger = get_logger(__name__)
  
@@ -13,7 +14,8 @@ logger = get_logger(__name__)
 class NotionImportError(Exception):
     """Raised when Notion import fails for a known reason."""
  
- 
+
+@cache_response(ttl=30000, namespace="notion:import2")
 async def import_resume_from_notion(page_id: str) -> ResumeData:
     """
     Full pipeline:

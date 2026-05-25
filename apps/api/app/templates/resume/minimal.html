@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-white text-gray-900 font-sans p-10 max-w-[794px] mx-auto">
+
+    <!-- Basics -->
+    <div class="mb-6">
+        <h1 class="text-3xl font-bold">{{ resume.basics.name }}</h1>
+        <p class="text-lg text-gray-500">{{ resume.basics.title }}</p>
+        <p class="text-sm text-gray-400 mt-1">
+            {{ resume.basics.email }}
+            {% if resume.basics.location %} · {{ resume.basics.location }}{% endif %}
+            {% if resume.basics.website %} · {{ resume.basics.website }}{% endif %}
+            {% if resume.basics.linkedin %} · {{ resume.basics.linkedin }}{% endif %}
+            {% if resume.basics.github %} · {{ resume.basics.github }}{% endif %}
+        </p>
+        {% if resume.basics.summary %}
+        <p class="mt-3 text-sm text-gray-600">{{ resume.basics.summary }}</p>
+        {% endif %}
+    </div>
+
+    <!-- Experience -->
+    {% if resume.experience %}
+    <div class="mb-6">
+        <h2 class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Experience</h2>
+        {% for job in resume.experience %}
+        <div class="mb-4">
+            <div class="flex justify-between items-baseline">
+                <span class="font-semibold">{{ job.role }}</span>
+                <span class="text-xs text-gray-400">{{ job.startDate }} – {{ "Present" if job.current else job.endDate
+                    }}</span>
+            </div>
+            <div class="text-sm text-gray-500">{{ job.company }}{% if job.location %} · {{ job.location }}{% endif %}
+            </div>
+            {% if job.highlights %}
+            <ul class="mt-1 list-disc list-inside text-sm text-gray-600 space-y-0.5">
+                {% for h in job.highlights %}<li>{{ h }}</li>{% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Projects -->
+    {% if resume.projects %}
+    <div class="mb-6">
+        <h2 class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Projects</h2>
+        {% for p in resume.projects %}
+        <div class="mb-3">
+            <div class="flex justify-between items-baseline">
+                <span class="font-semibold">{{ p.name }}</span>
+                {% if p.link %}<a href="{{ p.link }}" class="text-xs text-blue-500">{{ p.link }}</a>{% endif %}
+            </div>
+            <p class="text-sm text-gray-600">{{ p.description }}</p>
+            {% if p.tech %}
+            <p class="text-xs text-gray-400 mt-0.5">{{ p.tech | join(", ") }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Skills -->
+    {% if resume.skills %}
+    <div class="mb-6">
+        <h2 class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Skills</h2>
+        {% for s in resume.skills %}
+        <div class="mb-1 text-sm">
+            <span class="font-medium">{{ s.name }}:</span>
+            <span class="text-gray-600">{{ s.stack | join(", ") }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Education -->
+    {% if resume.education %}
+    <div class="mb-6">
+        <h2 class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Education</h2>
+        {% for e in resume.education %}
+        <div class="mb-2">
+            <div class="flex justify-between items-baseline">
+                <span class="font-semibold">{{ e.degree }} in {{ e.field }}</span>
+                <span class="text-xs text-gray-400">{{ e.startDate }} – {{ e.endDate }}</span>
+            </div>
+            <div class="text-sm text-gray-500">{{ e.institution }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</body>
+
+</html>

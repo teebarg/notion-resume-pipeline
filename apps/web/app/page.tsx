@@ -14,7 +14,7 @@ export default function DashboardPage() {
   const [resumeData, setResumeData] = useState<ResumeData>(defaultResumeData)
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>('minimal')
   
-  const hasData = resumeData.name || resumeData.experience.length > 0
+  const hasData = resumeData.basics.name || resumeData.experience.length > 0
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -65,7 +65,7 @@ export default function DashboardPage() {
             </div>
             {hasData && (
               <span className="hidden text-xs text-muted-foreground sm:block">
-                {resumeData.name} • {selectedTemplate.charAt(0).toUpperCase() + selectedTemplate.slice(1)} Template
+                {resumeData.basics.name} • {selectedTemplate.charAt(0).toUpperCase() + selectedTemplate.slice(1)} Template
               </span>
             )}
           </div>

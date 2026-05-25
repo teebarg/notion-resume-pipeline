@@ -10,14 +10,17 @@ interface ResumePreviewProps {
 }
 
 const formatDate = (date: string) => {
+  return date
   if (!date) return ''
   const [year, month] = date.split('-')
+  console.log([year, month])
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
   return `${months[parseInt(month) - 1]} ${year}`
 }
 
 export function ResumePreview({ data, template }: ResumePreviewProps) {
-  const isEmpty = !data.name && !data.title && data.experience.length === 0
+  const basic = data.basics
+  const isEmpty = !basic.name && !basic.title && data.experience.length === 0
 
   if (isEmpty) {
     return (
@@ -90,54 +93,54 @@ export function ResumePreview({ data, template }: ResumePreviewProps) {
     <div className={cn('h-full overflow-auto p-8 text-sm', styles.container)}>
       {/* Header */}
       <header className={styles.header}>
-        <h1 className={styles.name}>{data.name}</h1>
-        <p className={styles.title}>{data.title}</p>
-        
+        <h1 className={styles.name}>{basic.name}</h1>
+        <p className={styles.title}>{basic.title}</p>
+
         <div className="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-          {data.email && (
+          {data.basics.email && (
             <span className="flex items-center gap-1">
               <Mail className="h-3 w-3" />
-              {data.email}
+              {data.basics.email}
             </span>
           )}
-          {data.phone && (
+          {/* {data.phone && (
             <span className="flex items-center gap-1">
               <Phone className="h-3 w-3" />
               {data.phone}
             </span>
-          )}
-          {data.location && (
+          )} */}
+          {basic.location && (
             <span className="flex items-center gap-1">
               <MapPin className="h-3 w-3" />
-              {data.location}
+              {basic.location}
             </span>
           )}
-          {data.website && (
+          {basic.website && (
             <span className="flex items-center gap-1">
               <Globe className="h-3 w-3" />
-              {data.website}
+              {basic.website}
             </span>
           )}
-          {data.linkedin && (
+          {basic.linkedin && (
             <span className="flex items-center gap-1">
               <Linkedin className="h-3 w-3" />
-              {data.linkedin}
+              {basic.linkedin}
             </span>
           )}
-          {data.github && (
+          {basic.github && (
             <span className="flex items-center gap-1">
               <Github className="h-3 w-3" />
-              {data.github}
+              {basic.github}
             </span>
           )}
         </div>
       </header>
 
       {/* Summary */}
-      {data.summary && (
+      {basic.summary && (
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Summary</h2>
-          <p className="text-muted-foreground leading-relaxed">{data.summary}</p>
+          <p className="text-muted-foreground leading-relaxed">{basic.summary}</p>
         </section>
       )}
 
@@ -146,11 +149,11 @@ export function ResumePreview({ data, template }: ResumePreviewProps) {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Experience</h2>
           <div className="space-y-4">
-            {data.experience.map((exp) => (
-              <div key={exp.id}>
+            {data.experience?.map((exp, i: number) => (
+              <div key={i}>
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h3 className="font-semibold">{exp.position}</h3>
+                    <h3 className="font-semibold">{exp.role}</h3>
                     <p className={cn('text-sm', styles.accent)}>{exp.company}</p>
                   </div>
                   <div className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
@@ -162,7 +165,7 @@ export function ResumePreview({ data, template }: ResumePreviewProps) {
                   <p className="text-xs text-muted-foreground">{exp.location}</p>
                 )}
                 <ul className="mt-2 space-y-1">
-                  {exp.description.map((item, i) => (
+                  {exp.highlights?.map((item, i: number) => (
                     <li key={i} className="flex gap-2 text-muted-foreground">
                       <span className={styles.accent}>•</span>
                       {item}
@@ -180,7 +183,7 @@ export function ResumePreview({ data, template }: ResumePreviewProps) {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Skills</h2>
           <div className="flex flex-wrap gap-1.5">
-            {data.skills.map((skill, i) => (
+            {data.skills?.map((skill, i) => (
               <span
                 key={i}
                 className={cn(
@@ -191,7 +194,7 @@ export function ResumePreview({ data, template }: ResumePreviewProps) {
                   template === 'developer' && 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono'
                 )}
               >
-                {skill}
+                {skill.name}
               </span>
             ))}
           </div>
@@ -203,8 +206,8 @@ export function ResumePreview({ data, template }: ResumePreviewProps) {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Projects</h2>
           <div className="space-y-3">
-            {data.projects.map((project) => (
-              <div key={project.id}>
+            {data.projects?.map((project, i: number) => (
+              <div key={i}>
                 <div className="flex items-center gap-2">
                   <h3 className="font-semibold">{project.name}</h3>
                   {project.link && (
@@ -213,9 +216,9 @@ export function ResumePreview({ data, template }: ResumePreviewProps) {
                 </div>
                 <p className="text-muted-foreground">{project.description}</p>
                 <div className="mt-1 flex flex-wrap gap-1">
-                  {project.technologies.map((tech, i) => (
+                  {project.tech?.map((tech, i) => (
                     <span key={i} className="text-xs text-muted-foreground">
-                      {tech}{i < project.technologies.length - 1 && ' •'}
+                      {tech}{i < project.tech.length - 1 && ' •'}
                     </span>
                   ))}
                 </div>
@@ -230,14 +233,13 @@ export function ResumePreview({ data, template }: ResumePreviewProps) {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Education</h2>
           <div className="space-y-3">
-            {data.education.map((edu) => (
-              <div key={edu.id}>
+            {data.education?.map((edu, i: number) => (
+              <div key={i}>
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <h3 className="font-semibold">{edu.institution}</h3>
                     <p className="text-muted-foreground">
-                      {edu.degree} in {edu.field}
-                      {edu.gpa && <span className="ml-2">GPA: {edu.gpa}</span>}
+                      {edu.degree}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
