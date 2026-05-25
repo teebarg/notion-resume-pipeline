@@ -2,11 +2,10 @@ from contextlib import asynccontextmanager
 from collections.abc import AsyncIterator
 
 from app.schemas.common import HealthResponse
-import uvicorn
+from app.core.cache import add_cache_headers
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 
-from app import __version__
 from app.config import settings
 from app.core.logging import close_http_client, get_logger, setup_logging
 from app.core.redis import close_redis, init_redis, get_redis
@@ -31,16 +30,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 app = FastAPI(
     title="Notion PDF Pipeline",
     description="A developer-focused resume generation platform",
-    version=__version__,
+    version="0.1.0",
     lifespan=lifespan,
 )
 
+app.middleware("http")(add_cache_headers)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.BACKEND_CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Cache", "X-Cache-TTL"],
 )
 app.include_router(api_router, prefix=settings.api_v1_prefix)
 
@@ -48,7 +49,6 @@ app.include_router(api_router, prefix=settings.api_v1_prefix)
 async def root() -> dict[str, str]:
     return {
         "service": settings.app_name,
-        "version": __version__,
         "docs": "/docs",
     }
 

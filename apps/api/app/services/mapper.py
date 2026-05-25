@@ -1,25 +1,23 @@
 """
 Resume mapper.
-
+ 
 Converts a flat list of ContentNodes (from parser.py) into the canonical
 ResumeData. All resume-domain heuristics live here.
-
+ 
 Strategy:
   1. Walk nodes top-to-bottom.
-  2. A heading signals a new section context.
-  3. Content under each section is accumulated and structured.
-
-Section detection is case-insensitive and supports common variants:
-  experience / work experience / work history
-  projects / project / side projects
-  skills / technical skills / core competencies
-  summary / about / profile / objective
+  2. A heading_1 or heading_2 signals a new top-level section context.
+  3. heading_3 signals a sub-item (job, project, education entry) within a section.
+  4. Content under each section is accumulated and structured.
+ 
+Section detection is case-insensitive and handles real-world Notion heading variants.
 """
 
+import json
 import re
 from typing import Any
 
-from app.schemas.resume import Basics, Education, Experience, Project, ResumeData
+from app.schemas.resume import Basics, Education, Experience, Project, ResumeData, Skill
 from app.services.parser import ContentNode
 from app.core.logging import get_logger
 
@@ -51,6 +49,9 @@ _SECTION_ALIASES: dict[str, list[str]] = {
     "education": [
         "education", "academic background", "qualifications",
     ],
+    "availability": [
+        "availability",
+    ],
 }
  
 # Flat lookup: normalized heading text → canonical section key
@@ -66,21 +67,25 @@ SECTION_MAP: dict[str, str] = {
 # ---------------------------------------------------------------------------
  
  
-def map_to_resume(nodes: list[ContentNode], page_meta: dict[str, Any] | None = None) -> ResumeData:
+def map_to_resume(nodes: list[ContentNode], page_meta: dict[str, Any] | None = None, raw_blocks: list[dict[str, Any]] | None = None,) -> ResumeData:
     basics = _extract_basics_from_meta(page_meta)
     sections = _segment_by_section(nodes)
+    logger.debug(f"[map_to_resume sections]------------------------------------------: {json.dumps(sections, indent=2, default=str)}")
+
+    # Extract contact fields from raw blocks (hrefs not available in ContentNodes)
+    if raw_blocks:
+        contact = _extract_contact_from_raw_blocks(raw_blocks)
+        basics.title = contact.get("title", "")
+        basics.email = contact.get("email", "")
+        basics.location = contact.get("location", "")
+        basics.website = contact.get("website", "")
+        basics.linkedin = contact.get("linkedin", "")
+        basics.github = contact.get("github", "")
  
     # Summary
     summary_nodes = sections.get("summary", [])
     if summary_nodes:
         basics.summary = _nodes_to_text(summary_nodes)
- 
-    # Title: try the first paragraph in "unknown" (the subtitle line before any section)
-    if not basics.title:
-        for node in sections.get("unknown", []):
-            if node.type == "paragraph" and node.text and not _looks_like_contact(node.text):
-                basics.title = node.text
-                break
  
     experience = _parse_experience(sections.get("experience", []))
     projects = _parse_projects(sections.get("projects", []))
@@ -277,21 +282,27 @@ def _parse_skills(nodes: list[ContentNode]) -> list[str]:
     comma-separated paragraphs. We collect all text from paragraphs and bullets,
     ignoring the sub-headings themselves, and split on commas/pipes/middle-dots.
     """
-    skills: list[str] = []
+    skills: list[Skill] = []
+    current: Skill | None = None
     for node in nodes:
         if node.type == "heading_3":
             # Sub-category labels (Backend, Frontend…) — skip, they're not skills
+            if current is not None:
+                skills.append(current)
+            current = Skill(name=node.text.strip())
             continue
         if node.type in ("bullet", "sub_bullet"):
             items = _flatten_bullet(node)
         else:
-            items = [node.text] if node.text else []
- 
-        for item in items:
-            for skill in re.split(r"[,|;·]", item):
-                clean = skill.strip().strip("·").strip()
-                if clean:
-                    skills.append(clean)
+            # items = [node.text] if node.text else []
+            items = _split_tech_stack(text=node.text)
+        current.stack = items
+
+        # for item in items:
+        #     for skill in re.split(r"[,|;·]", item):
+        #         clean = skill.strip().strip("·").strip()
+        #         if clean:
+        #             skills.append(clean)
  
     return skills
  
@@ -299,6 +310,15 @@ def _parse_skills(nodes: list[ContentNode]) -> list[str]:
 # ---------------------------------------------------------------------------
 # Utilities
 # ---------------------------------------------------------------------------
+
+import re
+
+def _split_tech_stack(text: str) -> list[str]:
+    return [
+        item.strip()
+        for item in re.split(r',(?![^(]*\))', text)
+        if item.strip()
+    ]
  
  
 def _extract_basics_from_meta(page_meta: dict[str, Any] | None) -> Basics:
@@ -317,6 +337,86 @@ def _extract_basics_from_meta(page_meta: dict[str, Any] | None) -> Basics:
                 break
  
     return Basics(name=name)
+
+
+def _extract_contact_from_raw_blocks(raw_blocks: list[dict[str, Any]]) -> dict[str, str]:
+    """
+    Extract contact fields from the raw pre-section Notion blocks.
+ 
+    We use raw blocks (not ContentNodes) here because hrefs live in rich_text
+    entries which the parser intentionally discards — only plain_text is kept.
+ 
+    Handles the real patterns from the resume:
+      paragraph → plain "Senior Software Engineer / ..."            → title
+      paragraph → "📍 Lagos, Nigeria · Remote-friendly"            → location
+      paragraph → "✉️ " + linked "teebarg01@gmail.com"             → email
+      paragraph → "🌐 " + linked "Portfolio" (href: niyi.com.ng)   → website
+      paragraph → "🔗 " + linked "LinkedIn" (href: linkedin.com)   → linkedin
+      paragraph → "🔗 " + linked "Github"   (href: github.com)     → github
+    """
+    fields: dict[str, str] = {}
+ 
+    for block in raw_blocks:
+        if block.get("type") != "paragraph":
+            continue
+ 
+        rich_text: list[dict[str, Any]] = block.get("paragraph", {}).get("rich_text", [])
+        if not rich_text:
+            continue
+ 
+        plain = "".join(rt.get("plain_text", "") for rt in rich_text).strip()
+        if not plain:
+            continue
+ 
+        # Collect all hrefs present in this block's rich_text
+        hrefs = [
+            rt["href"]
+            for rt in rich_text
+            if rt.get("href")
+        ]
+ 
+        # Location
+        if plain.startswith("📍"):
+            fields.setdefault("location", plain.lstrip("📍").strip())
+            continue
+ 
+        # Email — prefer href (mailto:), fall back to regex on plain text
+        if "✉️" in plain or any("mailto:" in (h or "") for h in hrefs):
+            mailto = next((h for h in hrefs if h and h.startswith("mailto:")), None)
+            if mailto:
+                fields.setdefault("email", mailto.replace("mailto:", "").strip())
+            else:
+                m = re.search(r"[\w.+-]+@[\w-]+\.[a-zA-Z]{2,}", plain)
+                if m:
+                    fields.setdefault("email", m.group(0))
+            continue
+ 
+        # LinkedIn — check hrefs first
+        linkedin_href = next((h for h in hrefs if h and "linkedin.com" in h), None)
+        if linkedin_href:
+            fields.setdefault("linkedin", linkedin_href)
+            continue
+ 
+        # GitHub — check hrefs first
+        github_href = next((h for h in hrefs if h and "github.com" in h), None)
+        if github_href:
+            fields.setdefault("github", github_href)
+            continue
+ 
+        # Website / Portfolio — any remaining href that isn't a known service
+        website_href = next(
+            (h for h in hrefs if h and not any(s in h for s in ("linkedin", "github", "mailto"))),
+            None,
+        )
+        if website_href and ("🌐" in plain or "portfolio" in plain.lower()):
+            fields.setdefault("website", website_href)
+            continue
+ 
+        # Job title: first paragraph that isn't contact info
+        if not _looks_like_contact(plain) and "title" not in fields:
+            fields["title"] = plain
+ 
+    return fields
  
  
 def _nodes_to_text(nodes: list[ContentNode]) -> str:

@@ -23,39 +23,3 @@ class NotionImportRequest(BaseModel):
             # Re-format as UUID
             return f"{raw[:8]}-{raw[8:12]}-{raw[12:16]}-{raw[16:20]}-{raw[20:]}"
         return v
-
-
-# ---------------------------------------------------------------------------
-# Normalized resume schema
-# ---------------------------------------------------------------------------
-
-
-# class Basics(BaseModel):
-#     name: str = ""
-#     title: str = ""
-#     summary: str = ""
-
-
-# class Experience(BaseModel):
-#     company: str = ""
-#     role: str = ""
-#     startDate: str = ""
-#     endDate: str = ""
-#     highlights: list[str] = []
-
-
-# class Project(BaseModel):
-#     name: str = ""
-#     description: str = ""
-#     tech: list[str] = []
-
-
-# class ResumeSchema(BaseModel):
-#     basics: Basics = Basics()
-#     experience: list[Experience] = []
-#     projects: list[Project] = []
-#     skills: list[str] = []
-
-
-# class NotionImportResponse(BaseModel):
-#     resume: ResumeSchema

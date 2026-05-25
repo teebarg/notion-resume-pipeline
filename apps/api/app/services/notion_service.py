@@ -1,12 +1,10 @@
+import json
 from app.core.logging import get_logger
-from app.schemas.notion import NotionImportResponse
 from app.schemas.resume import ResumeData
 from app.services.notion_client import NotionAPIError, NotionClient
 from typing import Any
  
-from app.schemas.notion import ResumeData
 from app.services.mapper import map_to_resume
-from app.services.notion_client import NotionAPIError, NotionClient
 from app.services.parser import parse_blocks
 
 logger = get_logger(__name__)
@@ -30,7 +28,6 @@ async def import_resume_from_notion(page_id: str) -> ResumeData:
     page_meta: dict[str, Any] | None = None
     try:
         page_meta = await client.get_page(page_id)
-        logger.debug(f"[page_meta]-----------------------------------: {page_meta}")
     except NotionAPIError as exc:
         if exc.status_code == 404:
             raise NotionImportError(
@@ -46,7 +43,6 @@ async def import_resume_from_notion(page_id: str) -> ResumeData:
     # Fetch blocks recursively
     try:
         raw_blocks = await client.get_blocks_recursive(page_id)
-        logger.debug(f"[raw_blocks]------------------------------------------: {raw_blocks}")
     except NotionAPIError as exc:
         raise NotionImportError(
             f"Failed to fetch blocks for page '{page_id}': {exc}"
@@ -58,7 +54,8 @@ async def import_resume_from_notion(page_id: str) -> ResumeData:
  
     # Parse + map
     nodes = parse_blocks(raw_blocks)
-    resume = map_to_resume(nodes, page_meta=page_meta)
+    logger.debug(f"[nodes]------------------------------------------: {json.dumps(nodes, indent=2, default=str)}")
+    resume = map_to_resume(nodes, page_meta=page_meta, raw_blocks=raw_blocks)
  
     logger.info(
         "Imported resume from Notion page '%s': %d experience(s), %d project(s), %d skill(s).",
@@ -69,15 +66,3 @@ async def import_resume_from_notion(page_id: str) -> ResumeData:
     )
  
     return resume
-
-
-def _placeholder_resume(page_id: str) -> ResumeData:
-    return ResumeData(
-        name="Imported User",
-        title="Software Developer",
-        email="user@example.com",
-        summary=(
-            f"Resume placeholder for Notion page {page_id}. "
-            "Configure NOTION_API_TOKEN for live import."
-        ),
-    )
