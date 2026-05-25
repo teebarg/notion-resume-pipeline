@@ -61,7 +61,7 @@ async def health_check(redis: Redis = Depends(get_redis)) -> HealthResponse:
     checks = {}
 
     try:
-        redis.ping()
+        await redis.ping()
         checks["redis"] = "ok"
     except Exception as e:
         checks["redis"] = "error"
