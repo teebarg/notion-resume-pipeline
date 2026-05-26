@@ -1,9 +1,9 @@
 import json
+from typing import Any
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from app.core.logging import get_logger
 from app.schemas.resume import ResumeData
 from app.services.notion_client import NotionAPIError, NotionClient
-from typing import Any
-
 from app.services.mapper import map_to_resume
 from app.services.parser import parse_blocks
 from app.core.cache import redis_cache
@@ -14,11 +14,6 @@ logger = get_logger(__name__)
 class NotionImportError(Exception):
     """Raised when Notion import fails for a known reason."""
 
-
-@redis_cache(
-    ttl=30000,
-    namespace="services:notion:import",
-)
 async def import_resume_from_notion(page_id: str) -> ResumeData:
     """
     Full pipeline:
@@ -49,6 +44,7 @@ async def import_resume_from_notion(page_id: str) -> ResumeData:
     try:
         raw_blocks = await client.get_blocks_recursive(page_id)
     except NotionAPIError as exc:
+        logger.error("NotionAPIError '%s'.", exc)
         raise NotionImportError(
             f"Failed to fetch blocks for page '{page_id}': {exc}"
         ) from exc
@@ -71,3 +67,14 @@ async def import_resume_from_notion(page_id: str) -> ResumeData:
     )
 
     return resume
+
+@redis_cache(ttl=30000, namespace="notion-service", key_builder=lambda _, kw: kw.get("page_id"))
+async def get_resume(page_id: str):
+    try:
+        return await import_resume_from_notion(page_id=page_id)
+    except (NotionImportError, NotionAPIError) as exc:
+        logger.exception(f"[get_resume] Failed importing Notion resume: {exc} - page_id: {page_id}")
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc))
+    except Exception as e:
+        logger.error("[get_resume] - NotionAPIError '%s'.", e)
+        raise HTTPException(status_code=500, detail=str(e))

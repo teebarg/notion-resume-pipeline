@@ -51,6 +51,7 @@ R = TypeVar("R")
 _REFRESH_HEADER = "x-cache-refresh"
 _CACHE_STATUS_HEADER = "X-Cache"
 _CACHE_TTL_HEADER = "X-Cache-TTL"
+_CACHE_CONTROL = "Cache-Control"
 
 
 # Key builders
@@ -124,7 +125,7 @@ def cache_response(
                     cached_raw = await redis.get(cache_key)
                     if cached_raw is not None:
                         log.debug("Cache HIT [key=%s, endpoint=%s]", cache_key, func.__name__,)
-                        _set_cache_headers(request, status="HIT", ttl=ttl)
+                        set_cache_headers(request, status="HIT", ttl=ttl)
                         # Deserialise back to the return type if it's a Pydantic model
                         cached_data = json.loads(cached_raw)
                         return_type = func.__annotations__.get("return")
@@ -154,7 +155,7 @@ def cache_response(
             except Exception as exc:  # noqa: BLE001
                 log.warning("Cache write failed [key=%s, error=%s]", cache_key, exc)
 
-            _set_cache_headers(request, status="MISS", ttl=ttl)
+            set_cache_headers(request, status="MISS", ttl=ttl)
             return result
 
         return wrapper  # type: ignore[return-value]
@@ -163,7 +164,13 @@ def cache_response(
 
 
 # Header helpers
-def _set_cache_headers(request: Request, *, status: str, ttl: int) -> None:
+def set_cache_headers(
+    request: Request,
+    *,
+    status: str,
+    ttl: int,
+    cache_control: str | None = None,
+) -> None:
     """
     Stash cache metadata in request.state so the response middleware
     (or a custom APIRoute class) can forward them as response headers.
@@ -173,9 +180,14 @@ def _set_cache_headers(request: Request, *, status: str, ttl: int) -> None:
     request.state.cache_status = status
     request.state.cache_ttl = ttl
 
+    if cache_control:
+        request.state.cache_control = cache_control
 
 # Response middleware helper
-async def add_cache_headers(request: Request, call_next: Callable) -> Response:
+async def add_cache_headers(
+    request: Request,
+    call_next: Callable,
+) -> Response:
     """
     Starlette middleware that promotes request.state cache metadata into
     actual HTTP response headers.
@@ -184,9 +196,16 @@ async def add_cache_headers(request: Request, call_next: Callable) -> Response:
         app.middleware("http")(add_cache_headers)
     """
     response: Response = await call_next(request)
+
     if hasattr(request.state, "cache_status"):
         response.headers[_CACHE_STATUS_HEADER] = request.state.cache_status
+
+    if hasattr(request.state, "cache_ttl"):
         response.headers[_CACHE_TTL_HEADER] = str(request.state.cache_ttl)
+
+    if hasattr(request.state, "cache_control"):
+        response.headers[_CACHE_CONTROL] = (request.state.cache_control)
+
     return response
 
 
@@ -195,7 +214,6 @@ _locks: dict[str, asyncio.Lock] = {}
 
 
 def _default_key_builder(
-    func_name: str,
     args: tuple[Any, ...],
     kwargs: dict[str, Any],
 ) -> str:
@@ -210,7 +228,7 @@ def _default_key_builder(
 
     digest = hashlib.sha256(payload.encode()).hexdigest()
 
-    return f"{func_name}:{digest}"
+    return f"{digest}"
 
 
 def redis_cache(
@@ -248,23 +266,19 @@ def redis_cache(
                 key_builder(args, kwargs)
                 if key_builder
                 else _default_key_builder(
-                    func.__name__,
                     args,
                     kwargs,
                 )
             )
-
-            cache_key = f"{namespace}:{key}"
+            cache_key = f"{namespace}:{func.__name__}:{key}"
             redis: Redis | None = get_client()
             if redis is None:
                 raise RuntimeError("Redis client not initialized. Call init_redis() on startup.")
 
             # 1. Fast path
             cached = await redis.get(cache_key)
-            log.debug(f"[redis_cache] Getting cache [key={cache_key}, value={cached}]")
             if cached is not None:
                 data = json.loads(cached)
-                log.debug(f"[redis_cache] Getting cache [key={cache_key}, value={data}]")
                 return_type = func.__annotations__.get("return")
 
                 if (
@@ -284,7 +298,6 @@ def redis_cache(
             async with lock:
                 # another coroutine may already have filled cache
                 cached = await redis.get(cache_key)
-                log.debug(f"[redis_cache] Getting cache [key={cache_key}, value={cached}]")
                 if cached is not None:
                     data = json.loads(cached)
 
@@ -310,8 +323,6 @@ def redis_cache(
                     ttl,
                     json.dumps(payload, default=str),
                 )
-                log.debug(f"[redis_cache] Setting cache [key={cache_key}, value={payload}]")
-
                 return result
 
         return wrapper

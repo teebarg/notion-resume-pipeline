@@ -1,6 +1,5 @@
+from app.core.deps import get_resume_service
 from fastapi import APIRouter, Depends
-
-from app.dependencies import get_resume_service
 from app.schemas.resume import Template
 from app.services.resume_service import ResumeService
 

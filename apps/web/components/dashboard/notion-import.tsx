@@ -14,10 +14,11 @@ import {
 } from '@/components/ui/dialog'
 import { Spinner } from '@/components/ui/spinner'
 import { Import, ExternalLink, CheckCircle2, AlertCircle } from 'lucide-react'
-import type { ResumeData, Experience, Education, Project } from '@/lib/resume-types'
+import type { ResumeResponse, ResumeData, Experience, Education, Project } from '@/lib/resume-types'
+import { persistResume } from '@/lib/storage'
 
 interface NotionImportProps {
-  onImport: (data: ResumeData) => void
+  onImport: (data: ResumeResponse) => void
 }
 
 type ImportStatus = 'idle' | 'loading' | 'success' | 'error'
@@ -65,8 +66,8 @@ export function NotionImport({ onImport }: NotionImportProps) {
       }
 
       const data = await response.json()
-      console.log("data...........", data)
-      onImport(data.resume)
+      persistResume(data.page_id)
+      onImport(data)
       setStatus('success')
 
       setTimeout(() => {
@@ -82,39 +83,39 @@ export function NotionImport({ onImport }: NotionImportProps) {
 
   const loadSampleData = () => {
     const sampleData: ResumeData = {
-      name: 'Alex Chen',
-      title: 'Senior Full-Stack Developer',
-      email: 'alex.chen@email.com',
-      phone: '+1 (555) 123-4567',
-      location: 'San Francisco, CA',
-      website: 'alexchen.dev',
-      linkedin: 'linkedin.com/in/alexchen',
-      github: 'github.com/alexchen',
-      summary: 'Passionate full-stack developer with 6+ years of experience building scalable web applications. Expertise in React, Node.js, and cloud infrastructure. Led teams to deliver products used by millions of users.',
+      basics: {
+        name: 'Alex Chen',
+        title: 'Senior Full-Stack Developer',
+        email: 'alex.chen@email.com',
+        // phone: '+1 (555) 123-4567',
+        location: 'San Francisco, CA',
+        website: 'alexchen.dev',
+        linkedin: 'linkedin.com/in/alexchen',
+        github: 'github.com/alexchen',
+        summary: 'Passionate full-stack developer with 6+ years of experience building scalable web applications. Expertise in React, Node.js, and cloud infrastructure. Led teams to deliver products used by millions of users.',
+      },
       experience: [
         {
-          id: '1',
           company: 'TechCorp Inc.',
-          position: 'Senior Full-Stack Developer',
+          role: 'Senior Full-Stack Developer',
           location: 'San Francisco, CA',
           startDate: '2021-03',
           endDate: '',
           current: true,
-          description: [
+          highlights: [
             'Led development of microservices architecture serving 2M+ daily active users',
             'Reduced API response time by 40% through query optimization and caching strategies',
             'Mentored team of 5 junior developers and established code review practices',
           ],
         },
         {
-          id: '2',
           company: 'StartupXYZ',
-          position: 'Full-Stack Developer',
+          role: 'Full-Stack Developer',
           location: 'Remote',
           startDate: '2019-01',
           endDate: '2021-02',
           current: false,
-          description: [
+          highlights: [
             'Built real-time collaboration features using WebSockets and Redis',
             'Implemented CI/CD pipeline reducing deployment time by 60%',
             'Developed mobile-responsive dashboard used by 500+ enterprise clients',
@@ -123,46 +124,32 @@ export function NotionImport({ onImport }: NotionImportProps) {
       ] as Experience[],
       education: [
         {
-          id: '1',
           institution: 'University of California, Berkeley',
           degree: 'B.S.',
           field: 'Computer Science',
           startDate: '2014-08',
           endDate: '2018-05',
-          gpa: '3.8',
         },
       ] as Education[],
       skills: [
-        'TypeScript',
-        'React',
-        'Node.js',
-        'PostgreSQL',
-        'AWS',
-        'Docker',
-        'GraphQL',
-        'Redis',
-        'Next.js',
-        'Tailwind CSS',
       ],
       projects: [
         {
-          id: '1',
           name: 'DevFlow',
           description: 'Open-source developer productivity tool with 2k+ GitHub stars',
-          technologies: ['Next.js', 'Prisma', 'PostgreSQL'],
+          tech: ['Next.js', 'Prisma', 'PostgreSQL'],
           link: 'github.com/alexchen/devflow',
         },
         {
-          id: '2',
           name: 'CloudSync',
           description: 'Real-time file synchronization service with E2E encryption',
-          technologies: ['Go', 'WebRTC', 'AWS S3'],
+          tech: ['Go', 'WebRTC', 'AWS S3'],
           link: 'cloudsync.io',
         },
       ] as Project[],
     }
 
-    onImport(sampleData)
+    onImport({ page_id: "2e594", message: "Upload successful", resume: sampleData })
     setStatus('success')
 
     setTimeout(() => {

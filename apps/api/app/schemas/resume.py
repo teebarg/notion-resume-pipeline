@@ -2,7 +2,7 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-TemplateId = Literal["minimal", "modern", "classic", "developer"]
+TemplateId = Literal["minimal", "modern", "classic", "developer", "modern-sidebar"]
 
 class Basics(BaseModel):
     name: str = ""

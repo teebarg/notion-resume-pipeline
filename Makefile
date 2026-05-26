@@ -62,6 +62,16 @@ dev-api:
 dev-renderer:
 	cd services/renderer && node server.js
 
+dev:
+	npx concurrently --no-kill-others \
+		"cd apps/api && .venv\Scripts\python -m uvicorn app.main:app --reload --port 8000" \
+		"cd apps/web && npm run dev"
+
+dev2:
+	npx concurrently \
+		"cd apps/api && . .venv/bin/activate && python -m uvicorn app.main:app --reload --port 8000" \
+		"cd apps/web && npm run dev"
+
 activate-env-windows:
 	cd apps/api && .venv\Scripts\Activate.ps1
 

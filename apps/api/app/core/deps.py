@@ -1,15 +1,17 @@
 from collections.abc import AsyncGenerator
 
+from app.services.pdf_service import PDFService
 from fastapi import Depends
 from redis.asyncio import Redis
 from app.core.redis import get_redis
 from app.services.job_service import JobService
 from app.services.resume_service import ResumeService
 
-
 def get_resume_service() -> ResumeService:
     return ResumeService()
 
+def get_pdf_service(resume_service: ResumeService = Depends(get_resume_service)) -> PDFService:
+    return PDFService(resume_service=resume_service)
 
 async def get_job_service(
     redis: Redis = Depends(get_redis),

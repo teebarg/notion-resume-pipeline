@@ -13,35 +13,37 @@ import { Download, FileText, ChevronDown } from 'lucide-react'
 import type { ResumeData, TemplateId } from '@/lib/resume-types'
 
 interface ExportButtonProps {
+  pageId: string | null
   data: ResumeData
   template: TemplateId
   disabled?: boolean
 }
 
-export function ExportButton({ data, template, disabled }: ExportButtonProps) {
+export function ExportButton({ pageId, data, template, disabled }: ExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false)
+
+  if (!pageId) {
+    return
+  }
 
   const handleExportPDF = async () => {
     setIsExporting(true)
-    
     try {
-      const response = await fetch('/api/export/pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data, template }),
-      })
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/notion/pdf/${pageId}?template=${template}`);
 
-      if (!response.ok) throw new Error('Export failed')
+      if (!res.ok) throw new Error("Failed to download PDF");
 
-      const blob = await response.blob()
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `${data.name.replace(/\s+/g, '_')}_Resume.pdf`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${data.basics.name.replace(/\s+/g, '_')}_Resume.pdf`
+      document.body.appendChild(a);
+      a.click();
+
+      a.remove();
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error('Export error:', error)
     } finally {
@@ -55,7 +57,7 @@ export function ExportButton({ data, template, disabled }: ExportButtonProps) {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `${data.name.replace(/\s+/g, '_')}_Resume.json`
+    a.download = `${data.basics.name.replace(/\s+/g, '_')}_Resume.json`
     document.body.appendChild(a)
     a.click()
     document.body.removeChild(a)

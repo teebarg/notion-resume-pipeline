@@ -14,6 +14,7 @@ const templateStyles: Record<TemplateId, { accent: string; bg: string }> = {
   modern: { accent: 'bg-blue-500/20', bg: 'bg-blue-500/5' },
   classic: { accent: 'bg-amber-500/20', bg: 'bg-amber-500/5' },
   developer: { accent: 'bg-emerald-500/20', bg: 'bg-emerald-500/5' },
+  "modern-sidebar": { accent: 'bg-red-500/20', bg: 'bg-red-500/5' },
 }
 
 export function TemplateSelector({ selected, onSelect }: TemplateSelectorProps) {
@@ -24,7 +25,7 @@ export function TemplateSelector({ selected, onSelect }: TemplateSelectorProps) 
         {templates?.map((template) => {
           const isSelected = selected === template.id
           const styles = templateStyles[template.id]
-          
+
           return (
             <button
               key={template.id}
@@ -41,7 +42,7 @@ export function TemplateSelector({ selected, onSelect }: TemplateSelectorProps) 
                   <Check className="h-3 w-3 text-background" />
                 </div>
               )}
-              
+
               {/* Template preview mini */}
               <div className={cn(
                 'mb-2 flex h-16 w-full flex-col gap-1 rounded border p-2',
@@ -54,7 +55,7 @@ export function TemplateSelector({ selected, onSelect }: TemplateSelectorProps) 
                   <div className={cn('h-1 w-1/3 rounded-sm', styles.accent, 'opacity-40')} />
                 </div>
               </div>
-              
+
               <span className="text-sm font-medium">{template.name}</span>
               <span className="text-xs text-muted-foreground line-clamp-1">
                 {template.description}

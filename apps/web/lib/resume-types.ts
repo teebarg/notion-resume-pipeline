@@ -49,8 +49,13 @@ export interface ResumeData {
   projects: Project[];
 }
 
+export interface ResumeResponse {
+  page_id: string;
+  resume: ResumeData;
+  message: string;
+}
 
-export type TemplateId = "minimal" | "modern" | "classic" | "developer";
+export type TemplateId = "minimal" | "modern" | "classic" | "developer" | "modern-sidebar";
 
 export interface Template {
   id: TemplateId
@@ -83,6 +88,12 @@ export const templates: Template[] = [
     name: 'Developer',
     description: 'Technical focus with skills emphasis',
     preview: 'developer',
+  },
+  {
+    id: 'modern-sidebar',
+    name: 'Modern Sidebar',
+    description: 'A sleek, asymmetric two-column design optimized for impact.',
+    preview: 'modern-sidebar',
   },
 ]
 

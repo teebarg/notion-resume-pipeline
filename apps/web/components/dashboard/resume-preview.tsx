@@ -79,6 +79,16 @@ export function ResumePreview({ data, template }: ResumePreviewProps) {
                 'text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-2 before:content-["//"]',
             accent: "text-emerald-600 dark:text-emerald-400",
         },
+        "modern-sidebar": {
+            container: "font-mono",
+            header: "mb-6 border-l-4 border-emerald-500 pl-4",
+            name: "text-2xl font-bold",
+            title: "text-sm text-emerald-600 dark:text-emerald-400 mt-1",
+            section: "mb-5",
+            sectionTitle:
+                'text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-2 before:content-["//"]',
+            accent: "text-emerald-600 dark:text-emerald-400",
+        },
     };
 
     const styles = templateStyles[template];
@@ -98,11 +108,11 @@ export function ResumePreview({ data, template }: ResumePreviewProps) {
                         </span>
                     )}
                     {/* {data.phone && (
-            <span className="flex items-center gap-1">
-              <Phone className="h-3 w-3" />
-              {data.phone}
-            </span>
-          )} */}
+                        <span className="flex items-center gap-1">
+                            <Phone className="h-3 w-3" />
+                            {data.phone}
+                        </span>
+                    )} */}
                     {basic.location && (
                         <span className="flex items-center gap-1">
                             <MapPin className="h-3 w-3" />
@@ -174,20 +184,27 @@ export function ResumePreview({ data, template }: ResumePreviewProps) {
             {data.skills.length > 0 && (
                 <section className={styles.section}>
                     <h2 className={styles.sectionTitle}>Skills</h2>
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="space-y-2">
                         {data.skills?.map((skill, i) => (
-                            <span
-                                key={i}
-                                className={cn(
-                                    "rounded-md px-2 py-0.5 text-xs",
-                                    template === "minimal" && "bg-muted",
-                                    template === "modern" && "bg-blue-500/10 text-blue-700 dark:text-blue-300",
-                                    template === "classic" && "border border-amber-600/30",
-                                    template === "developer" && "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono"
-                                )}
-                            >
-                                {skill.name}
-                            </span>
+                            <div>
+                                <p>{skill.name}</p>
+                                <div key={i} className="flex flex-wrap gap-1.5">
+                                    {skill.stack?.map((stack, k) => (
+                                        <span
+                                            key={k}
+                                            className={cn(
+                                                "rounded-md px-2 py-0.5 text-xs",
+                                                template === "minimal" && "bg-muted",
+                                                template === "modern" && "bg-blue-500/10 text-blue-700 dark:text-blue-300",
+                                                template === "classic" && "border border-amber-600/30",
+                                                template === "developer" && "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-mono"
+                                            )}
+                                        >
+                                            {stack}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
                         ))}
                     </div>
                 </section>
