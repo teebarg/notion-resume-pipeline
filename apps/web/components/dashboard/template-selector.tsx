@@ -44,7 +44,7 @@ export function TemplateSelector({ selectedTemplateId, selectedVariantId, onSele
     const fetchTemplates = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${process.env.N}/api/resumes/templates`); // Adjust base URL as needed
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/resumes/templates`);
 
         if (!response.ok) {
           throw new Error(`Failed to fetch templates: ${response.statusText}`);
