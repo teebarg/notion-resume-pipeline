@@ -14,11 +14,17 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState<boolean>(true);
     const [pageId, setPageId] = useState<string | null>(getPersistedResume())
     const [resumeData, setResumeData] = useState<ResumeData>(defaultResumeData)
-    const [selectedTemplate, setSelectedTemplate] = useState<TemplateId>('minimal')
+    const [selectedTemplate, setSelectedTemplate] = useState<any>('minimal')
+    const [selectedVariantId, setSelectedVariantId] = useState<any>()
 
     const onImport = (data: ResumeResponse) => {
         setResumeData(data.resume)
         setPageId(data.page_id)
+    }
+
+    const handleSelectedTemplate = (templateId: string, variantId?: string) => {
+        setSelectedTemplate(templateId)
+        setSelectedVariantId(variantId)
     }
 
     useEffect(() => {
@@ -48,7 +54,7 @@ export default function DashboardPage() {
                         <Separator className="my-6" />
 
                         {/* Template Selection */}
-                        <TemplateSelector selected={selectedTemplate} onSelect={setSelectedTemplate} />
+                        <TemplateSelector selectedTemplateId={selectedTemplate} selectedVariantId={selectedVariantId} onSelect={handleSelectedTemplate} />
 
                         <div className="mt-6 lg:mt-auto lg:pt-6">
                             <ExportButton pageId={pageId} data={resumeData} template={selectedTemplate} disabled={!Boolean(pageId)} />

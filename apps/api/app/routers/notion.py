@@ -66,17 +66,6 @@ async def download_pdf(
         headers={"Content-Disposition": f"attachment; filename=resume-{page_id}.pdf"},
     )
 
-@router.get("/templates", summary="List available CV templates")
-async def list_templates():
-    """Returns all available template options."""
-    from app.schemas.resume import Template
-    return [
-        Template(id="minimal", name="Minimal", description="Clean single-column layout", preview="/static/previews/minimal.png"),
-        Template(id="modern",  name="Modern",  description="Two-column with sidebar",    preview="/static/previews/modern.png"),
-        Template(id="classic", name="Classic", description="Traditional chronological",  preview="/static/previews/classic.png"),
-        Template(id="developer", name="Developer", description="Tech-focused with skills front and centre", preview="/static/previews/developer.png"),
-    ]
-
 
 @router.post("/import", status_code=status.HTTP_200_OK, summary="Import and normalize a resume from a Notion page")
 @cache_response(
