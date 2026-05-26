@@ -35,6 +35,13 @@ from app.core.redis import get_client
 
 from app.core.logging import get_logger
 
+import asyncio
+import inspect
+import time
+from collections import OrderedDict
+
+from fastapi.encoders import jsonable_encoder
+
 log = get_logger(__name__)
 
 P = ParamSpec("P")
@@ -181,3 +188,132 @@ async def add_cache_headers(request: Request, call_next: Callable) -> Response:
         response.headers[_CACHE_STATUS_HEADER] = request.state.cache_status
         response.headers[_CACHE_TTL_HEADER] = str(request.state.cache_ttl)
     return response
+
+
+# local in-process locks
+_locks: dict[str, asyncio.Lock] = {}
+
+
+def _default_key_builder(
+    func_name: str,
+    args: tuple[Any, ...],
+    kwargs: dict[str, Any],
+) -> str:
+    payload = json.dumps(
+        {
+            "args": args,
+            "kwargs": kwargs,
+        },
+        sort_keys=True,
+        default=str,
+    )
+
+    digest = hashlib.sha256(payload.encode()).hexdigest()
+
+    return f"{func_name}:{digest}"
+
+
+def redis_cache(
+    ttl: int = 300,
+    namespace: str = "cache",
+    key_builder: Callable[
+        [tuple[Any, ...], dict[str, Any]],
+        str,
+    ]
+    | None = None,
+) -> Callable[
+    [Callable[P, Coroutine[Any, Any, R]]],
+    Callable[P, Coroutine[Any, Any, R]],
+]:
+    """
+    Redis cache decorator for async service functions.
+
+    Features:
+    - Redis-backed
+    - async-safe
+    - TTL
+    - request coalescing
+    - Pydantic support
+    """
+
+    def decorator(
+        func: Callable[P, Coroutine[Any, Any, R]],
+    ) -> Callable[P, Coroutine[Any, Any, R]]:
+        if not inspect.iscoroutinefunction(func):
+            raise TypeError("redis_cache only supports async functions")
+
+        @functools.wraps(func)
+        async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+            key = (
+                key_builder(args, kwargs)
+                if key_builder
+                else _default_key_builder(
+                    func.__name__,
+                    args,
+                    kwargs,
+                )
+            )
+
+            cache_key = f"{namespace}:{key}"
+            redis: Redis | None = get_client()
+            if redis is None:
+                raise RuntimeError("Redis client not initialized. Call init_redis() on startup.")
+
+            # 1. Fast path
+            cached = await redis.get(cache_key)
+            log.debug(f"[redis_cache] Getting cache [key={cache_key}, value={cached}]")
+            if cached is not None:
+                data = json.loads(cached)
+                log.debug(f"[redis_cache] Getting cache [key={cache_key}, value={data}]")
+                return_type = func.__annotations__.get("return")
+
+                if (
+                    return_type
+                    and hasattr(return_type, "model_validate")
+                ):
+                    return return_type.model_validate(data)
+
+                return data
+
+            # 2. Stampede protection
+            lock = _locks.setdefault(
+                cache_key,
+                asyncio.Lock(),
+            )
+
+            async with lock:
+                # another coroutine may already have filled cache
+                cached = await redis.get(cache_key)
+                log.debug(f"[redis_cache] Getting cache [key={cache_key}, value={cached}]")
+                if cached is not None:
+                    data = json.loads(cached)
+
+                    return_type = func.__annotations__.get(
+                        "return"
+                    )
+
+                    if (
+                        return_type
+                        and hasattr(return_type, "model_validate")
+                    ):
+                        return return_type.model_validate(data)
+
+                    return data
+
+                # compute
+                result = await func(*args, **kwargs)
+
+                payload = jsonable_encoder(result)
+
+                await redis.setex(
+                    cache_key,
+                    ttl,
+                    json.dumps(payload, default=str),
+                )
+                log.debug(f"[redis_cache] Setting cache [key={cache_key}, value={payload}]")
+
+                return result
+
+        return wrapper
+
+    return decorator

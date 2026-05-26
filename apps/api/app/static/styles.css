@@ -1,0 +1,37 @@
+@page {
+    size: A4;
+    margin: 12mm;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f5f5f5;
+}
+
+.resume {
+    width: 210mm;
+    min-height: 297mm;
+
+    background: white;
+
+    margin: auto;
+
+    padding: 20mm;
+}
+
+h1 {
+    margin-bottom: 0;
+}
+
+h2 {
+    margin-top: 4px;
+    color: gray;
+}
+
+section {
+    margin-top: 24px;
+}
+
+.experience {
+    break-inside: avoid;
+}

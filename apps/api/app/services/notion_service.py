@@ -3,19 +3,22 @@ from app.core.logging import get_logger
 from app.schemas.resume import ResumeData
 from app.services.notion_client import NotionAPIError, NotionClient
 from typing import Any
- 
+
 from app.services.mapper import map_to_resume
 from app.services.parser import parse_blocks
-from app.core.cache import cache_response
+from app.core.cache import redis_cache
 
 logger = get_logger(__name__)
- 
- 
+
+
 class NotionImportError(Exception):
     """Raised when Notion import fails for a known reason."""
- 
 
-@cache_response(ttl=30000, namespace="notion:import2")
+
+@redis_cache(
+    ttl=30000,
+    namespace="services:notion:import",
+)
 async def import_resume_from_notion(page_id: str) -> ResumeData:
     """
     Full pipeline:
@@ -25,7 +28,7 @@ async def import_resume_from_notion(page_id: str) -> ResumeData:
       4. Map ContentNodes into ResumeData.
     """
     client = NotionClient()
- 
+
     # Fetch page meta (for name/title extraction from page properties)
     page_meta: dict[str, Any] | None = None
     try:
@@ -41,7 +44,7 @@ async def import_resume_from_notion(page_id: str) -> ResumeData:
                 "Invalid or expired Notion token."
             ) from exc
         logger.warning("Could not fetch page meta (status %s); continuing without it.", exc.status_code)
- 
+
     # Fetch blocks recursively
     try:
         raw_blocks = await client.get_blocks_recursive(page_id)
@@ -49,16 +52,16 @@ async def import_resume_from_notion(page_id: str) -> ResumeData:
         raise NotionImportError(
             f"Failed to fetch blocks for page '{page_id}': {exc}"
         ) from exc
- 
+
     if not raw_blocks:
         logger.info("Notion page '%s' returned no blocks; returning empty resume.", page_id)
         return ResumeData()
- 
+
     # Parse + map
     nodes = parse_blocks(raw_blocks)
     logger.debug(f"[nodes]------------------------------------------: {json.dumps(nodes, indent=2, default=str)}")
     resume = map_to_resume(nodes, page_meta=page_meta, raw_blocks=raw_blocks)
- 
+
     logger.info(
         "Imported resume from Notion page '%s': %d experience(s), %d project(s), %d skill(s).",
         page_id,
@@ -66,5 +69,5 @@ async def import_resume_from_notion(page_id: str) -> ResumeData:
         len(resume.projects),
         len(resume.skills),
     )
- 
+
     return resume

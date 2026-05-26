@@ -81,16 +81,16 @@ async def list_templates():
     status_code=status.HTTP_200_OK,
     summary="Import and normalize a resume from a Notion page",
 )
-# @cache_response(
-#     ttl=30000,
-#     namespace="notion:import",
-#     key_builder=lambda body, _req: f"{body.page_id}",
-# )
+@cache_response(
+    ttl=30000,
+    namespace="notion:import",
+    key_builder=lambda body, _req: f"{body.page_id}",
+)
 async def import_from_notion(body: NotionImportRequest, request: Request) -> NotionImportResponse:
     """
     Fetch a Notion page, recursively parse its blocks, and return a
     normalized resume JSON.
- 
+
     - **page_id**: Notion page ID (UUID) or full Notion page URL.
     """
     try:
@@ -112,5 +112,5 @@ async def import_from_notion(body: NotionImportRequest, request: Request) -> Not
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An internal error occurred while importing the resume.",
         )
- 
+
     return NotionImportResponse(page_id=body.page_id, message="Resume imported successfully from Notion", resume=resume)
