@@ -1,4 +1,4 @@
-from app.schemas.resume import ResumeData, Template, TemplateId
+from app.schemas.resume import ResumeData, Template, TemplateVariant, TemplateId
 
 from pathlib import Path
 from typing import List, Dict, Any, Optional
@@ -20,20 +20,6 @@ def render_resume_html(resume: ResumeData, template_id: TemplateId = "minimal") 
 # Mocking schemas for self-contained context
 TemplateId = str
 
-class TemplateVariant(BaseModel):
-    id: str
-    name: str
-    primary_color: str  # Tailwind class or hex
-    text_color: str
-
-class Template(BaseModel):
-    id: TemplateId
-    name: str
-    description: str
-    preview: str
-    has_sidebar: bool = False
-    variants: List[TemplateVariant] = []
-
 class ResumeService:
     def __init__(self, templates_dir: Optional[Path] = None):
         self.templates_dir = templates_dir or (Path(__file__).parent.parent / "templates" / "resume")
@@ -41,7 +27,7 @@ class ResumeService:
             loader=FileSystemLoader(str(self.templates_dir)),
             autoescape=select_autoescape(["html"]),
         )
-        
+
         # Centralized Template Registry
         # In a massive app, this could be loaded dynamically from YAML/JSON files in the template directories
         self._templates: Dict[TemplateId, Template] = {

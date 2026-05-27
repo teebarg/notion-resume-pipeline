@@ -1,35 +1,38 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { Header } from '@/components/dashboard/header'
-import { NotionImport } from '@/components/dashboard/notion-import'
-import { TemplateSelector } from '@/components/dashboard/template-selector'
-import { ExportButton } from '@/components/dashboard/export-button'
-import { Card, CardContent } from '@/components/ui/card'
-import { Separator } from '@/components/ui/separator'
-import { defaultResumeData, ResumeResponse, type ResumeData, type TemplateId } from '@/lib/resume-types'
-import { getPersistedResume } from '@/lib/storage'
+import { useEffect, useState } from "react";
+import { Header } from "@/components/dashboard/header";
+import { NotionImport } from "@/components/dashboard/notion-import";
+import { TemplateSelector } from "@/components/dashboard/template-selector";
+import { ExportButton } from "@/components/dashboard/export-button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { defaultResumeData, ResumeResponse, type ResumeData } from "@/lib/resume-types";
+import { getPersistedResume } from "@/lib/storage";
+import { Dashboard } from "@/components/resume-dashboard";
 
 export default function DashboardPage() {
     const [loading, setLoading] = useState<boolean>(true);
-    const [pageId, setPageId] = useState<string | null>(getPersistedResume())
-    const [resumeData, setResumeData] = useState<ResumeData>(defaultResumeData)
-    const [selectedTemplate, setSelectedTemplate] = useState<any>('minimal')
-    const [selectedVariantId, setSelectedVariantId] = useState<any>()
+    const [pageId, setPageId] = useState<string | null>(getPersistedResume());
+    const [resumeData, setResumeData] = useState<ResumeData>(defaultResumeData);
+    const [selectedTemplate, setSelectedTemplate] = useState<any>("minimal");
+    const [selectedVariantId, setSelectedVariantId] = useState<any>();
 
     const onImport = (data: ResumeResponse) => {
-        setResumeData(data.resume)
-        setPageId(data.page_id)
-    }
+        setResumeData(data.resume);
+        setPageId(data.page_id);
+    };
 
     const handleSelectedTemplate = (templateId: string, variantId?: string) => {
-        setSelectedTemplate(templateId)
-        setSelectedVariantId(variantId)
-    }
+        setSelectedTemplate(templateId);
+        setSelectedVariantId(variantId);
+    };
 
     useEffect(() => {
         if (pageId) setLoading(true);
     }, [pageId, selectedTemplate]);
+
+    return <Dashboard />;
 
     return (
         <div className="flex min-h-screen flex-col">
@@ -54,7 +57,11 @@ export default function DashboardPage() {
                         <Separator className="my-6" />
 
                         {/* Template Selection */}
-                        <TemplateSelector selectedTemplateId={selectedTemplate} selectedVariantId={selectedVariantId} onSelect={handleSelectedTemplate} />
+                        <TemplateSelector
+                            selectedTemplateId={selectedTemplate}
+                            selectedVariantId={selectedVariantId}
+                            onSelect={handleSelectedTemplate}
+                        />
 
                         <div className="mt-6 lg:mt-auto lg:pt-6">
                             <ExportButton pageId={pageId} data={resumeData} template={selectedTemplate} disabled={!Boolean(pageId)} />
@@ -86,7 +93,7 @@ export default function DashboardPage() {
                                         )}
 
                                         <iframe
-                                            src={`${process.env.NEXT_PUBLIC_API_URL}/api/v1/notion/preview/${pageId}?template=${selectedTemplate}`}
+                                            src={`${process.env.NEXT_PUBLIC_API_URL}/api/v1/notion/preview/${pageId}?template=${selectedTemplate}&variant=${selectedVariantId}`}
                                             className="h-full w-full"
                                             onLoad={() => setLoading(false)}
                                         />
@@ -107,7 +114,6 @@ export default function DashboardPage() {
                                         <p className="mt-1 text-sm text-muted-foreground">Import from Notion or load sample data to preview</p>
                                     </div>
                                 )}
-                                {/* <ResumePreview data={resumeData} template={selectedTemplate} /> */}
                             </CardContent>
                         </Card>
                     </div>

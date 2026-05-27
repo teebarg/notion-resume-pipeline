@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, List
 
 from pydantic import BaseModel, Field
 
@@ -51,8 +51,16 @@ class ResumeData(BaseModel):
     projects: list[Project] = Field(default_factory=list)
 
 
+class TemplateVariant(BaseModel):
+    id: str
+    name: str
+    primary_color: str  # Tailwind class or hex
+    text_color: str
+
 class Template(BaseModel):
     id: TemplateId
     name: str
     description: str
     preview: str
+    has_sidebar: bool = False
+    variants: List[TemplateVariant] = []
