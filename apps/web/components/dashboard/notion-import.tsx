@@ -56,7 +56,7 @@ export function NotionImport({ onImport }: NotionImportProps) {
             }
 
             const data = await response.json();
-            persistResume(data.page_id);
+            persistResume(data);
             onImport(data);
             setStatus("success");
 

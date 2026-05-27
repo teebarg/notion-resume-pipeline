@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter
 
 from app.config import settings
-from app.schemas.common import HealthResponse, MessageResponse
+from app.schemas.common import HealthResponse
 
 router = APIRouter()
 

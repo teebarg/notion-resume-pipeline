@@ -50,7 +50,6 @@ class ResumeData(BaseModel):
     skills: list[Skill] = []
     projects: list[Project] = Field(default_factory=list)
 
-
 class TemplateVariant(BaseModel):
     id: str
     name: str

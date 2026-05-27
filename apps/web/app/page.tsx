@@ -13,7 +13,7 @@ import { Dashboard } from "@/components/resume-dashboard";
 
 export default function DashboardPage() {
     const [loading, setLoading] = useState<boolean>(true);
-    const [pageId, setPageId] = useState<string | null>(getPersistedResume());
+    const [pageId, setPageId] = useState<string | null>(getPersistedResume()?.page_id ?? null);
     const [resumeData, setResumeData] = useState<ResumeData>(defaultResumeData);
     const [selectedTemplate, setSelectedTemplate] = useState<any>("minimal");
     const [selectedVariantId, setSelectedVariantId] = useState<any>();

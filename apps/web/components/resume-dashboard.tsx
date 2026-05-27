@@ -1,16 +1,17 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Download, FileDown, Moon, Sun, Sparkles, FileText, Settings2, Github, Check, ZoomIn, ZoomOut, Menu, RotateCcw } from "lucide-react";
+import { FileDown, Moon, Sun, Sparkles, FileText, Settings2, Github, ZoomIn, ZoomOut, Menu, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
 import { TemplateSelector } from "./dashboard/template-selector";
 import { NotionImportDialog } from "./dashboard/notion-import-dialog";
 import { getPersistedResume } from "@/lib/storage";
-import { defaultResumeData, ResumeData, ResumeResponse, TemplateId } from "@/lib/resume-types";
+import { ResumeData, ResumeResponse, TemplateId } from "@/lib/resume-types";
+import { ExportButton } from "./dashboard/export-button";
 
 const NotionGlyph = () => (
     <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
@@ -19,7 +20,7 @@ const NotionGlyph = () => (
 );
 
 interface SidebarContentProps {
-    resume: ResumeData;
+    resume: ResumeData | undefined;
     templateId: TemplateId;
     variantId: string;
     onSelect: (templateId: string, variantId?: string) => void;
@@ -38,37 +39,17 @@ function SidebarContent({ resume, templateId, variantId, onSelect, onImportClick
                         <div className="text-xs text-muted-foreground">Sync from a Notion page</div>
                     </div>
                 </Button>
-                <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground px-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                    <span className="font-mono truncate">Loaded: {resume.basics.name}</span>
-                </div>
+                {resume && (
+                    <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground px-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
+                        <span className="font-mono truncate">Loaded: {resume.basics.name}</span>
+                    </div>
+                )}
             </div>
 
             <div>
                 <p className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-3">02 — Template</p>
                 <TemplateSelector onSelect={onSelect} selectedTemplateId={templateId} selectedVariantId={variantId} />
-                {/* <div className="space-y-2">
-                    {templates.map((t) => {
-                        const active = t.id === templateId;
-                        return (
-                            <button
-                                key={t.id}
-                                onClick={() => setTemplateId(t.id)}
-                                className={`w-full text-left p-3 rounded-lg border transition-all ${
-                                    active
-                                        ? "border-primary/60 bg-primary/5 ring-1 ring-primary/20"
-                                        : "border-border hover:border-foreground/20 bg-card"
-                                }`}
-                            >
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">{t.name}</span>
-                                    {active && <Check className="w-3.5 h-3.5 text-primary" />}
-                                </div>
-                                <div className="text-xs text-muted-foreground mt-0.5">{t.description}</div>
-                            </button>
-                        );
-                    })}
-                </div> */}
             </div>
 
             <div>
@@ -98,16 +79,14 @@ function SidebarContent({ resume, templateId, variantId, onSelect, onImportClick
 
 export function Dashboard() {
     const { theme, setTheme } = useTheme();
-    const [resume, setResume] = useState<ResumeData>(defaultResumeData);
+    const [resume, setResume] = useState<ResumeData | undefined>(getPersistedResume()?.resume);
     const [templateId, setTemplateId] = useState<any>("minimal");
     const [variantId, setVariantId] = useState<string>("");
     const [importOpen, setImportOpen] = useState(false);
     const [mobileNavOpen, setMobileNavOpen] = useState(false);
     const [zoom, setZoom] = useState(0.85);
-    const [exporting, setExporting] = useState(false);
-    const printRef = useRef<HTMLDivElement>(null);
     const [loading, setLoading] = useState<boolean>(true);
-    const [pageId, setPageId] = useState<string | null>(getPersistedResume());
+    const [pageId, setPageId] = useState<string | null>(getPersistedResume()?.page_id ?? null);
 
     const onImport = (data: ResumeResponse) => {
         setResume(data.resume);
@@ -142,21 +121,9 @@ export function Dashboard() {
         fitZoom();
     }, [templateId, resume, fitZoom]);
 
-    const handleExport = async () => {
-        setExporting(true);
-        await new Promise((r) => setTimeout(r, 200));
-        window.print();
-        setTimeout(() => setExporting(false), 400);
-        toast("Print dialog opened", { description: "Choose 'Save as PDF' as destination." });
-    };
-
     const handleImportClick = () => {
         setMobileNavOpen(false);
         setImportOpen(true);
-    };
-
-    const handleTemplateSelect = (id: TemplateId) => {
-        setTemplateId(id);
     };
 
     const handleSelectedTemplate = (templateId: string, variantId?: string) => {
@@ -219,17 +186,16 @@ export function Dashboard() {
                             {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                         </Button>
                         <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
-                        <Button size="sm" onClick={handleExport} disabled={exporting} className="gap-2 font-medium">
-                            <Download className="w-4 h-4" />
-                            <span className="hidden xs:inline sm:inline">Export PDF</span>
-                        </Button>
+                        {resume && (
+                            <ExportButton pageId={pageId} data={resume} template={templateId} disabled={!Boolean(pageId)} />
+                        )}
                     </div>
                 </div>
             </header>
 
-            <div className="grid lg:grid-cols-[320px_1fr] h-[calc(100vh-3.5rem)]">
+            <div className="grid lg:grid-cols-[320px_1fr] h-[calc(100vh-3.6rem)]">
                 {/* Desktop sidebar */}
-                <aside className="hidden lg:flex flex-col border-r border-border bg-sidebar/40 p-5 no-print sticky top-14 h-[calc(100vh-3.5rem)]">
+                <aside className="hidden lg:flex flex-col border-r border-border bg-sidebar/40 p-5 no-print sticky top-14 h-[calc(100vh-3.6rem)]">
                     <ScrollArea className="flex-1 -mx-2 px-2">
                         <SidebarContent
                             resume={resume}
@@ -263,11 +229,11 @@ export function Dashboard() {
                         </div>
                     </div>
 
-                    <div className="flex justify-center py-6 sm:py-10 px-2 sm:px-4">
+                    <div className="flex justify-center py-4 px-2 sm:px-4">
                         <div
                             style={{
                                 width: `calc(210mm * ${zoom})`,
-                                height: `calc(297mm * ${zoom})`,
+                                height: `calc(237mm * ${zoom})`,
                             }}
                         >
                             <div
@@ -280,29 +246,18 @@ export function Dashboard() {
                             >
                                 <Card
                                     id="print-root"
-                                    ref={printRef}
-                                    className="w-[210mm] min-h-[297mm] bg-white shadow-2xl shadow-black/30 border-0 overflow-hidden p-0 rounded-sm"
+                                    className="w-[210mm] min-h-[237mm] bg-white shadow-2xl shadow-black/30 border-0 overflow-hidden p-0 rounded-sm relative"
                                 >
-                                    {/* <ResumeTemplate id={templateId} data={resume} /> */}
                                     {pageId ? (
-                                        <>
-                                            {loading && (
-                                                <div className="absolute inset-0 p-6 space-y-3 animate-pulse bg-white">
-                                                    <div className="h-6 w-1/2 bg-gray-200 rounded" />
-                                                    <div className="h-4 w-full bg-gray-100" />
-                                                    <div className="h-4 w-5/6 bg-gray-100" />
-                                                    <div className="h-4 w-2/3 bg-gray-100" />
-                                                </div>
-                                            )}
-
-                                            <iframe
-                                                src={`${process.env.NEXT_PUBLIC_API_URL}/api/v1/notion/preview/${pageId}?template=${templateId}&variant=${variantId}`}
-                                                className="min-h-[297mm] h-full w-full"
-                                                onLoad={() => setLoading(false)}
-                                            />
-                                        </>
+                                        <iframe
+                                            key={pageId}
+                                            src={`${process.env.NEXT_PUBLIC_API_URL}/api/v1/notion/preview/${pageId}?template=${templateId}&variant=${variantId}`}
+                                            onLoad={() => setLoading(false)}
+                                            title="Resume preview"
+                                            className="w-[210mm] h-[237mm] block border-0 bg-white"
+                                        />
                                     ) : (
-                                        <div className="flex h-full flex-col items-center justify-center text-center">
+                                        <div className="w-[210mm] h-[237mm] flex flex-col items-center justify-center text-zinc-400 text-sm font-mono">
                                             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
                                                 <svg className="h-8 w-8 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                     <path
@@ -315,6 +270,11 @@ export function Dashboard() {
                                             </div>
                                             <h3 className="text-lg font-medium">No resume data yet</h3>
                                             <p className="mt-1 text-sm text-muted-foreground">Import from Notion or load sample data to preview</p>
+                                        </div>
+                                    )}
+                                    {pageId && loading && (
+                                        <div className="absolute top-3 right-3 text-[10px] font-mono px-2 py-1 rounded bg-black/70 text-white">
+                                            rendering…
                                         </div>
                                     )}
                                 </Card>

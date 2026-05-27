@@ -67,10 +67,10 @@ export function ExportButton({ pageId, data, template, disabled }: ExportButtonP
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button disabled={disabled || isExporting} className="gap-2">
+                <Button size="sm" disabled={disabled || isExporting} className="gap-2">
                     {isExporting ? <Spinner className="h-4 w-4" /> : <Download className="h-4 w-4" />}
-                    Export
-                    <ChevronDown className="h-3 w-3" />
+                    <span className="hidden xs:inline sm:inline">Export</span>
+                    <ChevronDown className="hidden xs:inline sm:inline h-3 w-3" />
                 </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">

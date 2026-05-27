@@ -3,7 +3,6 @@ from app.schemas.resume import ResumeData, Template, TemplateVariant, TemplateId
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from jinja2 import Environment, FileSystemLoader, select_autoescape, TemplateNotFound
-from pydantic import BaseModel
 
 TEMPLATES_DIR = Path(__file__).parent.parent / "templates" / "resume"
 

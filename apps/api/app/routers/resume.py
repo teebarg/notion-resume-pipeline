@@ -12,7 +12,7 @@ router = APIRouter()
     response_model=List[Template], 
     summary="Get all available resume templates and variations"
 )
-async def list_available_templates(
+async def list_templates(
     resume_service: ResumeService = Depends(get_resume_service)
 ) -> List[Template]:
     """

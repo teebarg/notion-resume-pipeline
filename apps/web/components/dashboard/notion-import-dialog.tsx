@@ -59,7 +59,7 @@ export function NotionImportDialog({
             }
 
             const data = await response.json();
-            persistResume(data.page_id);
+            persistResume(data);
             onImport(data);
             onOpenChange(false);
             // setStatus("success");

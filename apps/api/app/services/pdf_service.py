@@ -41,6 +41,5 @@ class PDFService:
             template_id=template, 
             variant_id=variant
         )
-        # Compile to PDF
         pdf_bytes = await self._html_to_pdf(html)
         return pdf_bytes
