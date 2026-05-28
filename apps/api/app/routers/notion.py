@@ -1,8 +1,10 @@
 import io
 import logging
-from app.core.cache import cache_response, set_cache_headers
+from app.core.cache import set_cache_headers
 from app.utils import render_error_page
-from app.core.deps import get_pdf_service, get_resume_service
+from app.core.deps import get_notion_resume_service, get_pdf_service, get_resume_service
+from app.services.notion_resume import NotionResumeService
+from app.exceptions.notion import NotionPageNotFoundError, NotionUnauthorizedError
 from fastapi import APIRouter, Depends, HTTPException, status, Request, Query
 from app.schemas.notion import NotionImportRequest, NotionImportResponse
 from app.services.notion_client import NotionAPIError
@@ -16,6 +18,7 @@ from app.services.pdf_service import PDFService
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
 
 
 @router.get("/preview/{page_id}", response_class=HTMLResponse, summary="Render resume as HTML preview")
@@ -67,13 +70,47 @@ async def download_pdf(
     )
 
 
+# @router.post("/import-old", status_code=status.HTTP_200_OK, summary="Import and normalize a resume from a Notion page")
+# @cache_response(
+#     ttl=30000,
+#     namespace="notion:import",
+#     key_builder=lambda body, _req: f"{body.page_id}",
+# )
+# async def import_from_notion(body: NotionImportRequest, request: Request, service: NotionResumeService = Depends(get_notion_resume_service)) -> NotionImportResponse:
+#     """
+#     Fetch a Notion page, recursively parse its blocks, and return a
+#     normalized resume JSON.
+
+#     - **page_id**: Notion page ID (UUID) or full Notion page URL.
+#     """
+#     try:
+#         resume = await import_resume_from_notion(page_id=body.page_id)
+#     except NotionImportError as exc:
+#         raise HTTPException(
+#             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+#             detail=str(exc),
+#         ) from exc
+#     except NotionAPIError as exc:
+#         logger.exception("Unexpected Notion API error for page '%s'.", body.page_id)
+#         raise HTTPException(
+#             status_code=status.HTTP_502_BAD_GATEWAY,
+#             detail=f"Notion API returned an unexpected error: {exc}",
+#         ) from exc
+#     except Exception:
+#         logger.exception("Unhandled error during Notion import for page '%s'.", body.page_id)
+#         raise HTTPException(
+#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+#             detail="An internal error occurred while importing the resume.",
+#         )
+
+#     return NotionImportResponse(page_id=body.page_id, message="Resume imported successfully from Notion", resume=resume)
+
+
 @router.post("/import", status_code=status.HTTP_200_OK, summary="Import and normalize a resume from a Notion page")
-@cache_response(
-    ttl=30000,
-    namespace="notion:import",
-    key_builder=lambda body, _req: f"{body.page_id}",
-)
-async def import_from_notion(body: NotionImportRequest, request: Request) -> NotionImportResponse:
+async def get_notion_resume(
+    body: NotionImportRequest,
+    service: NotionResumeService = Depends(get_notion_resume_service)
+):
     """
     Fetch a Notion page, recursively parse its blocks, and return a
     normalized resume JSON.
@@ -81,23 +118,18 @@ async def import_from_notion(body: NotionImportRequest, request: Request) -> Not
     - **page_id**: Notion page ID (UUID) or full Notion page URL.
     """
     try:
-        resume = await import_resume_from_notion(page_id=body.page_id)
+        resume = await service.get_cached_resume(page_id=body.page_id)
+        return NotionImportResponse(page_id=body.page_id, message="Resume imported successfully from Notion", resume=resume)
+        
+    except NotionPageNotFoundError as exc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(exc))
+        
+    except NotionUnauthorizedError as exc:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc))
+        
     except NotionImportError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail=str(exc),
-        ) from exc
-    except NotionAPIError as exc:
-        logger.exception("Unexpected Notion API error for page '%s'.", body.page_id)
-        raise HTTPException(
-            status_code=status.HTTP_502_BAD_GATEWAY,
-            detail=f"Notion API returned an unexpected error: {exc}",
-        ) from exc
-    except Exception:
-        logger.exception("Unhandled error during Notion import for page '%s'.", body.page_id)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="An internal error occurred while importing the resume.",
-        )
-
-    return NotionImportResponse(page_id=body.page_id, message="Resume imported successfully from Notion", resume=resume)
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc))
+        
+    except Exception as exc:
+        logger.critical("Unhandled critical system failure during import: %s", exc, exc_info=True)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected system error occurred.")
