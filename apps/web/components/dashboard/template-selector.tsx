@@ -36,7 +36,6 @@ export function TemplateSelector({ selectedTemplateId, selectedVariantId, onSele
             try {
                 setLoading(true);
                 const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/resumes/templates`);
-                console.log("🚀 ~ fetchTemplates ~ response:", response);
 
                 if (!response.ok) {
                     throw new Error(`Failed to fetch templates: ${response.statusText}`);
@@ -77,9 +76,9 @@ export function TemplateSelector({ selectedTemplateId, selectedVariantId, onSele
             {templates.map((template) => {
                 const isTemplateSelected = selectedTemplateId === template.id;
                 return (
-                    <button
+                    <div
                         key={template.id}
-                        onClick={() => onSelect(template.id)}
+                        // onClick={() => onSelect(template.id)}
                         className={`w-full text-left p-3 rounded-lg border transition-all ${
                             isTemplateSelected
                                 ? "border-primary/60 bg-primary/5 ring-1 ring-primary/20"
@@ -91,7 +90,33 @@ export function TemplateSelector({ selectedTemplateId, selectedVariantId, onSele
                             {isTemplateSelected && <Check className="w-3.5 h-3.5 text-primary" />}
                         </div>
                         <div className="text-xs text-muted-foreground mt-0.5">{template.description}</div>
-                    </button>
+                        <div>
+                            {template.variants?.length > 0 && (
+                                <div className="mb-4">
+                                    <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-2">Color Themes</span>
+                                    <div className="flex gap-2">
+                                        {template.variants.map((variant) => {
+                                            const isVariantSelected = selectedVariantId === variant.id && isTemplateSelected;
+                                            return (
+                                                <button
+                                                    key={variant.id}
+                                                    type="button"
+                                                    onClick={() => onSelect(template.id, variant.id)}
+                                                    title={`${template.name} (${variant.name})`}
+                                                    className={`w-6 h-6 rounded-full border-2 hover:scale-110 transition-transform ${
+                                                        isVariantSelected ? "border-blue-600 scale-105" : "border-transparent"
+                                                    }`}
+                                                    style={{
+                                                        backgroundColor: variant.primary_color.includes("-") ? undefined : variant.primary_color,
+                                                    }}
+                                                />
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 );
 
                 return (

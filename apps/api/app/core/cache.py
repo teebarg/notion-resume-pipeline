@@ -26,6 +26,9 @@ from __future__ import annotations
 import functools
 import hashlib
 import json
+import asyncio
+import inspect
+import time
 from collections.abc import Callable, Coroutine
 from typing import Any, ParamSpec, TypeVar
 
@@ -34,10 +37,6 @@ from redis.asyncio import Redis
 from app.core.redis import get_client
 
 from app.core.logging import get_logger
-
-import asyncio
-import inspect
-import time
 from collections import OrderedDict
 
 from fastapi.encoders import jsonable_encoder
@@ -47,7 +46,6 @@ log = get_logger(__name__)
 P = ParamSpec("P")
 R = TypeVar("R")
 
-# Header names
 _REFRESH_HEADER = "x-cache-refresh"
 _CACHE_STATUS_HEADER = "X-Cache"
 _CACHE_TTL_HEADER = "X-Cache-TTL"
@@ -163,7 +161,7 @@ def cache_response(
     return decorator
 
 
-# Header helpers
+# header helpers
 def set_cache_headers(
     request: Request,
     *,

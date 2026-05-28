@@ -178,7 +178,7 @@ export function Dashboard() {
                     </div>
                     <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                         <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hidden sm:inline-flex" asChild>
-                            <a href="https://github.com" target="_blank" rel="noreferrer">
+                            <a href="https://github.com/teebarg" target="_blank" rel="noreferrer">
                                 <Github className="w-4 h-4" /> <span className="hidden md:inline">Star</span>
                             </a>
                         </Button>
