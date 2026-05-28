@@ -4,6 +4,8 @@ import { cn } from "@/lib/utils";
 import { templates, type TemplateId } from "@/lib/resume-types";
 import { Check } from "lucide-react";
 import React, { useState, useEffect } from "react";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface TemplateVariant {
     id: string;
@@ -92,28 +94,40 @@ export function TemplateSelector({ selectedTemplateId, selectedVariantId, onSele
                         <div className="text-xs text-muted-foreground mt-0.5">{template.description}</div>
                         <div>
                             {template.variants?.length > 0 && (
-                                <div className="mb-4">
-                                    <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-2">Color Themes</span>
-                                    <div className="flex gap-2">
-                                        {template.variants.map((variant) => {
-                                            const isVariantSelected = selectedVariantId === variant.id && isTemplateSelected;
-                                            return (
-                                                <button
-                                                    key={variant.id}
-                                                    type="button"
-                                                    onClick={() => onSelect(template.id, variant.id)}
-                                                    title={`${template.name} (${variant.name})`}
-                                                    className={`w-6 h-6 rounded-full border-2 hover:scale-110 transition-transform ${
-                                                        isVariantSelected ? "border-blue-600 scale-105" : "border-transparent"
-                                                    }`}
-                                                    style={{
-                                                        backgroundColor: variant.primary_color.includes("-") ? undefined : variant.primary_color,
-                                                    }}
-                                                />
-                                            );
-                                        })}
+                                <>
+                                    <RadioGroup defaultValue="option-one">
+                                        <div className="flex items-center gap-3">
+                                            <RadioGroupItem value="option-one" id="option-one" />
+                                            <Label htmlFor="option-one">Option One</Label>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <RadioGroupItem value="option-two" id="option-two" />
+                                            <Label htmlFor="option-two">Option Two</Label>
+                                        </div>
+                                    </RadioGroup>
+                                    <div className="mb-4">
+                                        <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400 block mb-2">Color Themes</span>
+                                        <div className="flex gap-2">
+                                            {template.variants.map((variant) => {
+                                                const isVariantSelected = selectedVariantId === variant.id && isTemplateSelected;
+                                                return (
+                                                    <button
+                                                        key={variant.id}
+                                                        type="button"
+                                                        onClick={() => onSelect(template.id, variant.id)}
+                                                        title={`${template.name} (${variant.name})`}
+                                                        className={`w-6 h-6 rounded-full border-2 hover:scale-110 transition-transform ${
+                                                            isVariantSelected ? "border-blue-600 scale-105" : "border-transparent"
+                                                        }`}
+                                                        style={{
+                                                            backgroundColor: variant.primary_color.includes("-") ? undefined : variant.primary_color,
+                                                        }}
+                                                    />
+                                                );
+                                            })}
+                                        </div>
                                     </div>
-                                </div>
+                                </>
                             )}
                         </div>
                     </div>
