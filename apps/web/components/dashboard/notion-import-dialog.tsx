@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
+import { ExternalLink, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { ResumeResponse } from "@/lib/resume-types";
 import { persistResume } from "@/lib/storage";
@@ -17,7 +17,6 @@ export function NotionImportDialog({
     onOpenChange: (o: boolean) => void;
     onImport: (data: ResumeResponse) => void;
 }) {
-    // const [open, setOpen] = useState(false);
     const [url, setUrl] = useState("");
     const [loading, setLoading] = useState(false);
 
@@ -40,13 +39,10 @@ export function NotionImportDialog({
 
         const pageId = extractPageId(url);
         if (!pageId) {
-            // setStatus("error");
             toast.error("Invalid Notion page URL. Please check and try again.");
             return;
         }
         setLoading(true);
-        // Simulated import — in production wire up via Notion connector.
-        // await new Promise((r) => setTimeout(r, 1100));
         try {
             const response = await fetch("/api/notion/import", {
                 method: "POST",
@@ -62,31 +58,16 @@ export function NotionImportDialog({
             persistResume(data);
             onImport(data);
             onOpenChange(false);
-            // setStatus("success");
             toast.success("Imported from Notion", {
                 description: "Your Notion page was parsed and applied.",
             });
-
-            // setTimeout(() => {
-            //     setOpen(false);
-            //     setStatus("idle");
-            //     setPageUrl("");
-            // }, 1500);
         } catch {
-            // setStatus("error");
-            // setErrorMessage("Failed to import from Notion. Make sure the page is accessible.");
             toast.error("An error occurred", {
                 description: "Failed to import from Notion. Make sure the page is accessible.",
             });
         } finally {
             setLoading(false);
         }
-        // onImport({ ...defaultResume });
-        // setLoading(false);
-        // onOpenChange(false);
-        // toast.success("Imported from Notion", {
-        //     description: "Your Notion page was parsed and applied.",
-        // });
     };
 
     return (
@@ -107,7 +88,14 @@ export function NotionImportDialog({
                         onChange={(e) => setUrl(e.target.value)}
                         className="font-mono text-sm"
                     />
-                    <p className="text-xs text-muted-foreground">Demo mode: any URL imports sample data. Connect Notion in Settings for live sync.</p>
+                    <p className="text-xs text-muted-foreground">
+                        <ExternalLink className="mr-1 inline h-3 w-3" />
+                        Need help setting up your Notion page? Check our{" "}
+                        <a href="#" className="underline hover:text-foreground">
+                            template guide
+                        </a>
+                        .
+                    </p>
                 </div>
                 <DialogFooter>
                     <Button variant="ghost" onClick={() => onOpenChange(false)}>
