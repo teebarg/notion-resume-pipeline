@@ -4,9 +4,12 @@ import hashlib
 import inspect
 import json
 from typing import Any, Callable, Coroutine, ParamSpec, TypeVar
+from app.core.logging import get_logger
 from fastapi import Response, Request
 from fastapi.encoders import jsonable_encoder
 from app.core.redis import get_client
+
+logger = get_logger(__name__)
 
 P = ParamSpec("P")
 R = TypeVar("R")
@@ -139,17 +142,31 @@ def redis_cache(
     return decorator
 
 
-async def invalidate_tag(namespace: str, tag: str):
+async def invalidate_tag(namespace: str, tag: str) -> None:
+    """
+    Finds all cache keys registered under a specific domain tag 
+    and removes them atomically.
+    """
     redis = get_client()
+    if not redis:
+        logger.error("Redis client unavailable; skipping tag invalidation.")
+        return
+
     tag_key = f"tag:{namespace}:{tag}"
-    
-    # Fetch every individual cache key bound to this domain entity
-    cache_keys = await redis.smembers(tag_key)
-    if cache_keys:
-        await redis.delete(*cache_keys)
+    try:
+        # Retrieve all individual cache keys attached to this entity tag
+        cache_keys = await redis.smembers(tag_key)
         
-    # Remove the tracking set bucket
-    await redis.delete(tag_key)
+        if cache_keys:
+            async with redis.pipeline(transaction=True) as pipe:
+                pipe.delete(*cache_keys)
+                pipe.delete(tag_key)
+                await pipe.execute()
+            logger.info(f"Successfully purged {len(cache_keys)} keys for tag: {tag_key}")
+        else:
+            logger.debug(f"No keys found matching tag: {tag_key}")
+    except Exception as exc:
+        logger.error(f"Failed to invalidate cache tag {tag_key}: {exc}", exc_info=True)
 
 
 # header helpers

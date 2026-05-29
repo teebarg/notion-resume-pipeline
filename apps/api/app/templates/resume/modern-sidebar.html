@@ -47,6 +47,13 @@
                         {{ resume.basics.email }}
                     </div>
 
+                    {% if resume.basics.phone %}
+                    <div class="text-xs text-slate-600">
+                        <span class="block font-semibold text-slate-800">Phone</span>
+                        {{ resume.basics.phone }}
+                    </div>
+                    {% endif %}
+
                     {% if resume.basics.location %}
                     <div class="text-xs text-slate-600">
                         <span class="block font-semibold text-slate-800">Location</span>
@@ -59,6 +66,22 @@
                         <span class="block font-semibold text-slate-800">Website</span>
                         <a href="{{ resume.basics.website }}" class="text-blue-600 hover:underline">{{
                             resume.basics.website | replace("https://", "") | replace("http://", "") }}</a>
+                    </div>
+                    {% endif %}
+
+                    {% if resume.basics.linkedin %}
+                    <div class="text-xs text-slate-600">
+                        <span class="block font-semibold text-slate-800">Linkedin</span>
+                        <a href="{{ resume.basics.linkedin }}" class="text-blue-600 hover:underline">{{
+                            resume.basics.linkedin | replace("https://", "") | replace("http://", "") }}</a>
+                    </div>
+                    {% endif %}
+
+                    {% if resume.basics.github %}
+                    <div class="text-xs text-slate-600">
+                        <span class="block font-semibold text-slate-800">Github</span>
+                        <a href="{{ resume.basics.github }}" class="text-blue-600 hover:underline">{{
+                            resume.basics.github | replace("https://github.com/", "") | replace("http://github.com/", "") }}</a>
                     </div>
                     {% endif %}
                 </div>

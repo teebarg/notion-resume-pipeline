@@ -1,80 +1,68 @@
 import json
 from typing import Any
-from fastapi import APIRouter, Depends, HTTPException, status, Request
 from app.core.logging import get_logger
 from app.schemas.resume import ResumeData
 from app.services.notion_client import NotionAPIError, NotionClient
 from app.services.mapper import map_to_resume
 from app.services.parser import parse_blocks
 from app.core.cache import redis_cache
+from app.exceptions.notion import NotionImportError, NotionPageNotFoundError, NotionUnauthorizedError
 
 logger = get_logger(__name__)
 
+class NotionService:
+    def __init__(self, notion_client: NotionClient):
+        self.notion_client = notion_client
 
-class NotionImportError(Exception):
-    """Raised when Notion import fails for a known reason."""
+    async def import_resume(self, page_id: str) -> ResumeData:
+        """
+        Executes the pure data pipeline to fetch and process a Notion resume.
+        Throws domain-specific exceptions.
+        """
+        page_meta = await self._fetch_page_metadata(page_id)
+        raw_blocks = await self._fetch_blocks_recursive(page_id)
 
-async def import_resume_from_notion(page_id: str) -> ResumeData:
-    """
-    Full pipeline:
-      1. Authenticate + fetch Notion page metadata.
-      2. Recursively fetch all blocks.
-      3. Parse blocks into ContentNodes.
-      4. Map ContentNodes into ResumeData.
-    """
-    client = NotionClient()
+        if not raw_blocks:
+            logger.info("Notion page '%s' returned no blocks; returning empty resume.", page_id)
+            return ResumeData()
 
-    # Fetch page meta (for name/title extraction from page properties)
-    page_meta: dict[str, Any] | None = None
-    try:
-        page_meta = await client.get_page(page_id)
-    except NotionAPIError as exc:
-        if exc.status_code == 404:
-            raise NotionImportError(
-                f"Notion page '{page_id}' not found. "
-                "Check the page ID and ensure the integration has access."
-            ) from exc
-        if exc.status_code == 401:
-            raise NotionImportError(
-                "Invalid or expired Notion token."
-            ) from exc
-        logger.warning("Could not fetch page meta (status %s); continuing without it.", exc.status_code)
+        # Parse nodes and build domain object
+        nodes = parse_blocks(raw_blocks)
+        logger.debug(f"[nodes]: {json.dumps(nodes, indent=2, default=str)}")
+        
+        resume = map_to_resume(nodes, page_meta=page_meta, raw_blocks=raw_blocks)
+        
+        logger.info(
+            "Successfully compiled resume from Notion page '%s': %d experiences, %d projects.",
+            page_id, len(resume.experience), len(resume.projects)
+        )
+        return resume
 
-    # Fetch blocks recursively
-    try:
-        raw_blocks = await client.get_blocks_recursive(page_id)
-    except NotionAPIError as exc:
-        logger.error("NotionAPIError '%s'.", exc)
-        raise NotionImportError(
-            f"Failed to fetch blocks for page '{page_id}': {exc}"
-        ) from exc
+    async def _fetch_page_metadata(self, page_id: str) -> dict[str, Any] | None:
+        try:
+            return await self.notion_client.get_page(page_id)
+        except NotionAPIError as exc:
+            if exc.status_code == 404:
+                raise NotionPageNotFoundError(f"Notion page '{page_id}' not found or access denied.") from exc
+            if exc.status_code == 401:
+                raise NotionUnauthorizedError("Invalid or expired Notion integration token.") from exc
+            
+            logger.warning("Could not fetch page meta (status %s); continuing without it.", exc.status_code)
+            return None
 
-    if not raw_blocks:
-        logger.info("Notion page '%s' returned no blocks; returning empty resume.", page_id)
-        return ResumeData()
+    async def _fetch_blocks_recursive(self, page_id: str) -> list[dict[str, Any]]:
+        try:
+            return await self.notion_client.get_blocks_recursive(page_id)
+        except NotionAPIError as exc:
+            logger.error("Failed executing recursive block fetch for page '%s'.", page_id)
+            raise NotionImportError(f"Failed to fetch blocks from Notion: {exc}") from exc
 
-    # Parse + map
-    nodes = parse_blocks(raw_blocks)
-    logger.debug(f"[nodes]------------------------------------------: {json.dumps(nodes, indent=2, default=str)}")
-    resume = map_to_resume(nodes, page_meta=page_meta, raw_blocks=raw_blocks)
-
-    logger.info(
-        "Imported resume from Notion page '%s': %d experience(s), %d project(s), %d skill(s).",
-        page_id,
-        len(resume.experience),
-        len(resume.projects),
-        len(resume.skills),
+    @redis_cache(
+        ttl=30000, 
+        namespace="srv:notion", 
+        key_builder=lambda ctx: ctx["page_id"],
+        tags=lambda ctx: [f"page:{ctx['page_id']}"]
     )
-
-    return resume
-
-@redis_cache(ttl=30000, namespace="notion-service", key_builder=lambda _, kw: kw.get("page_id"))
-async def get_resume(page_id: str):
-    try:
-        return await import_resume_from_notion(page_id=page_id)
-    except (NotionImportError, NotionAPIError) as exc:
-        logger.exception(f"[get_resume] Failed importing Notion resume: {exc} - page_id: {page_id}")
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc))
-    except Exception as e:
-        logger.error("[get_resume] - NotionAPIError '%s'.", e)
-        raise HTTPException(status_code=500, detail=str(e))
+    async def get_cached_resume(self, page_id: str) -> ResumeData:
+        """Cached read access proxy wrapper for the main import pipeline."""
+        return await self.import_resume(page_id)

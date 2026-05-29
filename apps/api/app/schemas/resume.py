@@ -13,6 +13,7 @@ class Basics(BaseModel):
     website: str = ""
     linkedin: str = ""
     github: str = ""
+    phone: str = ""
 
 
 class Experience(BaseModel):

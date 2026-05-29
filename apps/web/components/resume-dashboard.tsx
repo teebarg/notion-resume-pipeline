@@ -1,17 +1,18 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FileDown, Moon, Sun, Sparkles, FileText, Settings2, Github, ZoomIn, ZoomOut, Menu, RotateCcw } from "lucide-react";
+import { FileDown, Moon, Sun, Sparkles, FileText, Settings2, Github, ZoomIn, ZoomOut, Menu, RotateCcw, CloudSync } from "lucide-react";
 import { toast } from "sonner";
 import { useTheme } from "next-themes";
 import { TemplateSelector } from "./dashboard/template-selector";
 import { NotionImportDialog } from "./dashboard/notion-import-dialog";
-import { getPersistedResume } from "@/lib/storage";
+import { getPersistedResume, persistResume } from "@/lib/storage";
 import { ResumeData, ResumeResponse, TemplateId } from "@/lib/resume-types";
 import { ExportButton } from "./dashboard/export-button";
+import { Spinner } from "@/components/ui/spinner";
 
 const NotionGlyph = () => (
     <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
@@ -78,6 +79,7 @@ function SidebarContent({ resume, templateId, variantId, onSelect, onImportClick
 }
 
 export function Dashboard() {
+    const toastId = useRef<string | number | undefined>(undefined);
     const { theme, setTheme } = useTheme();
     const [resume, setResume] = useState<ResumeData | undefined>(getPersistedResume()?.resume);
     const [templateId, setTemplateId] = useState<any>("minimal");
@@ -87,6 +89,7 @@ export function Dashboard() {
     const [zoom, setZoom] = useState(0.85);
     const [loading, setLoading] = useState<boolean>(true);
     const [pageId, setPageId] = useState<string | null>(getPersistedResume()?.page_id ?? null);
+    const [isSyncing, setIsSyncing] = useState(false);
 
     const onImport = (data: ResumeResponse) => {
         setResume(data.resume);
@@ -129,6 +132,29 @@ export function Dashboard() {
     const handleSelectedTemplate = (templateId: string, variantId?: string) => {
         setTemplateId(templateId);
         setVariantId(variantId ?? "");
+    };
+
+    const handleDataSync = async () => {
+        setIsSyncing(true);
+        toastId.current = toast.loading("Updating from notion...");
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/notion/sync`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ page_id: pageId }),
+            });
+
+            if (!res.ok) throw new Error("Failed to update data from notion");
+            const data = await res.json();
+            persistResume(data);
+            setResume(data.resume)
+            toast.success("Done! Resume synced from notion", { id: toastId.current });
+        } catch (error) {
+            console.error("Syncing error:", error);
+            toast.error("Failed! Try again later", { id: toastId.current });
+        } finally {
+            setIsSyncing(false);
+        }
     };
 
     return (
@@ -186,6 +212,12 @@ export function Dashboard() {
                             {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                         </Button>
                         <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
+                        {resume && (
+                            <Button onClick={handleDataSync} size="sm" disabled={isSyncing} className="gap-2">
+                                {isSyncing ? <Spinner className="h-4 w-4" /> : <CloudSync className="h-4 w-4" />}
+                                <span className="hidden xs:inline sm:inline">Update</span>
+                            </Button>
+                        )}
                         {resume && (
                             <ExportButton pageId={pageId} data={resume} template={templateId} disabled={!Boolean(pageId)} />
                         )}

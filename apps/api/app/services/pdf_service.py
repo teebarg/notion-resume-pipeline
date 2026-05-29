@@ -1,16 +1,17 @@
 import asyncio
-import logging
+from app.services.notion_service import NotionService
+from app.core.logging import get_logger
 from playwright.sync_api import sync_playwright
 from playwright.async_api import async_playwright
-from app.services.notion_service import get_resume
 from app.schemas.resume import TemplateId
 from app.services.resume_service import ResumeService
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 class PDFService:
-    def __init__(self, resume_service: ResumeService):
+    def __init__(self, resume_service: ResumeService, notion_service: NotionService):
         self.resume_service = resume_service
+        self.notion_service = notion_service
 
     def _html_to_pdf_sync(self, html: str) -> bytes:
         with sync_playwright() as p:
@@ -35,7 +36,7 @@ class PDFService:
         template: TemplateId, 
         variant: str | None = None
     ) -> bytes:
-        resume = await get_resume(page_id)
+        resume = await self.notion_service.get_cached_resume(page_id=page_id)
         html = self.resume_service.render(
             resume=resume, 
             template_id=template, 

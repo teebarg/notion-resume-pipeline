@@ -1,24 +1,66 @@
 import io
-import logging
-from app.core.cache import set_cache_headers
-from app.utils import render_error_page
-from app.core.deps import get_notion_resume_service, get_pdf_service, get_resume_service
-from app.services.notion_resume import NotionResumeService
-from app.exceptions.notion import NotionPageNotFoundError, NotionUnauthorizedError
-from fastapi import APIRouter, Depends, HTTPException, status, Request, Query
-from app.schemas.notion import NotionImportRequest, NotionImportResponse
-from app.services.notion_client import NotionAPIError
-
-from app.services.notion_service import NotionImportError, get_resume, import_resume_from_notion
+import hashlib
+import hmac
+from fastapi import APIRouter, Depends, Header, HTTPException, Request, status, Query
 from fastapi.responses import HTMLResponse, StreamingResponse
-from app.schemas.resume import TemplateId
+from app.core.cache import invalidate_tag, set_cache_headers
+from app.utils import render_error_page
+from app.core.deps import get_notion_service, get_pdf_service, get_resume_service
+from app.services.notion_service import NotionService
+from app.exceptions.notion import NotionImportError, NotionPageNotFoundError, NotionUnauthorizedError
+from app.core.logging import get_logger
+from app.schemas.notion import NotionImportRequest, NotionImportResponse
+from app.schemas.resume import ResumeData, TemplateId
 from app.services.resume_service import ResumeService
 from app.services.pdf_service import PDFService
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 router = APIRouter()
 
+NOTION_SIGNING_SECRET = "webhook_secret"
+
+def verify_notion_signature(payload: bytes, signature: str | None) -> bool:
+    """Validates that incoming webhook payloads genuinely originate from Notion."""
+    if not signature:
+        return False
+    # Notion signs payloads using HMAC-SHA256
+    mac = hmac.new(NOTION_SIGNING_SECRET.encode(), msg=payload, digestmod=hashlib.sha256)
+    return hmac.compare_digest(mac.hexdigest(), signature)
+
+
+@router.post("/webhook/notion", status_code=status.HTTP_200_OK)
+async def headless_notion_sync(
+    request: Request,
+    x_notion_signature: str | None = Header(None, alias="X-Notion-Signature")
+):
+    """
+    Headless Webhook Endpoint: Listens silently for page updates directly from Notion.
+    Nukes associated cache sets immediately upon structural data changes.
+    """
+    raw_body = await request.body()
+    
+    if not verify_notion_signature(raw_body, x_notion_signature):
+        logger.warning("Rejected unauthorized or spoofed Notion webhook attempt.")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail="Invalid signature validation header"
+        )
+
+    payload = await request.json()
+    
+    # Extract the updated page or database item ID from Notion's event payload
+    page_id = payload.get("data", {}).get("id") or payload.get("page_id")
+    event_type = payload.get("event", {}).get("type") # e.g., "page.updated"
+
+    if page_id and event_type in ("page.updated", "automation.triggered"):
+        logger.info(f"Automated Sync Triggered. Reason: {event_type} for Page ID: {page_id}")
+        
+        await invalidate_tag(namespace="srv:notion", tag=f"page:{page_id}")
+        
+        return {"status": "headless_sync_processed", "target_invalidated": page_id}
+
+    return {"status": "ignored", "detail": "Event type or entity id out of context"}
 
 
 @router.get("/preview/{page_id}", response_class=HTMLResponse, summary="Render resume as HTML preview")
@@ -28,9 +70,18 @@ async def preview_resume(
     template: TemplateId = "minimal",
     variant: str | None = Query(None, description="Color palette variant variant ID"),
     resume_service: ResumeService = Depends(get_resume_service),
+    notion_service: NotionService = Depends(get_notion_service)
 ) -> HTMLResponse:
     """Re-fetches (from cache) and renders the resume as an HTML page."""
-    resume = await get_resume(page_id=page_id)
+    try:
+        resume = await notion_service.get_cached_resume(page_id=page_id)
+    except Exception as exc:
+        logger.critical("Unhandled critical system failure during import: %s", exc, exc_info=True)
+        return render_error_page(
+            title="Resume Error",
+            message="Couldn't import the resume, contact administrator",
+            status_code=500,
+        )
     try:
         html = resume_service.render(resume=resume, template_id=template, variant_id=variant)
         set_cache_headers(
@@ -70,46 +121,10 @@ async def download_pdf(
     )
 
 
-# @router.post("/import-old", status_code=status.HTTP_200_OK, summary="Import and normalize a resume from a Notion page")
-# @cache_response(
-#     ttl=30000,
-#     namespace="notion:import",
-#     key_builder=lambda body, _req: f"{body.page_id}",
-# )
-# async def import_from_notion(body: NotionImportRequest, request: Request, service: NotionResumeService = Depends(get_notion_resume_service)) -> NotionImportResponse:
-#     """
-#     Fetch a Notion page, recursively parse its blocks, and return a
-#     normalized resume JSON.
-
-#     - **page_id**: Notion page ID (UUID) or full Notion page URL.
-#     """
-#     try:
-#         resume = await import_resume_from_notion(page_id=body.page_id)
-#     except NotionImportError as exc:
-#         raise HTTPException(
-#             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-#             detail=str(exc),
-#         ) from exc
-#     except NotionAPIError as exc:
-#         logger.exception("Unexpected Notion API error for page '%s'.", body.page_id)
-#         raise HTTPException(
-#             status_code=status.HTTP_502_BAD_GATEWAY,
-#             detail=f"Notion API returned an unexpected error: {exc}",
-#         ) from exc
-#     except Exception:
-#         logger.exception("Unhandled error during Notion import for page '%s'.", body.page_id)
-#         raise HTTPException(
-#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-#             detail="An internal error occurred while importing the resume.",
-#         )
-
-#     return NotionImportResponse(page_id=body.page_id, message="Resume imported successfully from Notion", resume=resume)
-
-
 @router.post("/import", status_code=status.HTTP_200_OK, summary="Import and normalize a resume from a Notion page")
 async def get_notion_resume(
     body: NotionImportRequest,
-    service: NotionResumeService = Depends(get_notion_resume_service)
+    service: NotionService = Depends(get_notion_service)
 ):
     """
     Fetch a Notion page, recursively parse its blocks, and return a
@@ -133,3 +148,18 @@ async def get_notion_resume(
     except Exception as exc:
         logger.critical("Unhandled critical system failure during import: %s", exc, exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected system error occurred.")
+
+
+@router.post("/sync", response_model=ResumeData)
+async def manual_on_demand_sync(
+    body: NotionImportRequest,
+    service: NotionService = Depends(get_notion_service)
+):
+    """
+    Manual Override Endpoint: Purges cache keys matching the target entity 
+    and aggressively fetches fresh source data to pre-warm the cache.
+    """
+    await invalidate_tag(namespace="srv:notion", tag=f"page:{body.page_id}")
+
+    fresh_data = await service.get_cached_resume(page_id=body.page_id)
+    return NotionImportResponse(page_id=body.page_id, message="Resume synced successfully from Notion", resume=fresh_data)

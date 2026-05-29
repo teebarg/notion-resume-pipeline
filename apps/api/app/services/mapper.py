@@ -1,9 +1,6 @@
 """
 Resume mapper.
  
-Converts a flat list of ContentNodes (from parser.py) into the canonical
-ResumeData. All resume-domain heuristics live here.
- 
 Strategy:
   1. Walk nodes top-to-bottom.
   2. A heading_1 or heading_2 signals a new top-level section context.
@@ -65,8 +62,6 @@ SECTION_MAP: dict[str, str] = {
 # ---------------------------------------------------------------------------
 # Public entry point
 # ---------------------------------------------------------------------------
- 
- 
 def map_to_resume(nodes: list[ContentNode], page_meta: dict[str, Any] | None = None, raw_blocks: list[dict[str, Any]] | None = None,) -> ResumeData:
     basics = _extract_basics_from_meta(page_meta)
     sections = _segment_by_section(nodes)
@@ -81,6 +76,7 @@ def map_to_resume(nodes: list[ContentNode], page_meta: dict[str, Any] | None = N
         basics.website = contact.get("website", "")
         basics.linkedin = contact.get("linkedin", "")
         basics.github = contact.get("github", "")
+        basics.phone = contact.get("phone", "")
  
     # Summary
     summary_nodes = sections.get("summary", [])
@@ -107,12 +103,9 @@ def map_to_resume(nodes: list[ContentNode], page_meta: dict[str, Any] | None = N
         skills=skills,
     )
  
- 
 # ---------------------------------------------------------------------------
 # Section segmentation
 # ---------------------------------------------------------------------------
- 
- 
 def _segment_by_section(nodes: list[ContentNode]) -> dict[str, list[ContentNode]]:
     """
     Walk nodes and group by the nearest heading_1 / heading_2 section.
@@ -142,8 +135,6 @@ def _segment_by_section(nodes: list[ContentNode]) -> dict[str, list[ContentNode]
 # ---------------------------------------------------------------------------
 # Section parsers
 # ---------------------------------------------------------------------------
- 
- 
 def _parse_experience(nodes: list[ContentNode]) -> list[Experience]:
     """
     heading_3 = new job entry (format: "Role — Company" or "Company — Role").
@@ -294,15 +285,8 @@ def _parse_skills(nodes: list[ContentNode]) -> list[str]:
         if node.type in ("bullet", "sub_bullet"):
             items = _flatten_bullet(node)
         else:
-            # items = [node.text] if node.text else []
             items = _split_tech_stack(text=node.text)
         current.stack = items
-
-        # for item in items:
-        #     for skill in re.split(r"[,|;·]", item):
-        #         clean = skill.strip().strip("·").strip()
-        #         if clean:
-        #             skills.append(clean)
  
     return skills
  
@@ -310,9 +294,6 @@ def _parse_skills(nodes: list[ContentNode]) -> list[str]:
 # ---------------------------------------------------------------------------
 # Utilities
 # ---------------------------------------------------------------------------
-
-import re
-
 def _split_tech_stack(text: str) -> list[str]:
     return [
         item.strip()
@@ -353,6 +334,7 @@ def _extract_contact_from_raw_blocks(raw_blocks: list[dict[str, Any]]) -> dict[s
       paragraph → "🌐 " + linked "Portfolio" (href: niyi.com.ng)   → website
       paragraph → "🔗 " + linked "LinkedIn" (href: linkedin.com)   → linkedin
       paragraph → "🔗 " + linked "Github"   (href: github.com)     → github
+      paragraph → "🔗  +2348060001234"                             → phone
     """
     fields: dict[str, str] = {}
  
@@ -378,6 +360,11 @@ def _extract_contact_from_raw_blocks(raw_blocks: list[dict[str, Any]]) -> dict[s
         # Location
         if plain.startswith("📍"):
             fields.setdefault("location", plain.lstrip("📍").strip())
+            continue
+
+        # Phone
+        if plain.startswith("📞"):
+            fields.setdefault("phone", plain.lstrip("📞").strip())
             continue
  
         # Email — prefer href (mailto:), fall back to regex on plain text
