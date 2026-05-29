@@ -1,19 +1,18 @@
-from app.schemas.resume import ResumeData, Template, TemplateVariant, TemplateId
-
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from jinja2 import Environment, FileSystemLoader, select_autoescape, TemplateNotFound
+from app.schemas.resume import ResumeData, Template, TemplateVariant, TemplateId
 
-TEMPLATES_DIR = Path(__file__).parent.parent / "templates" / "resume"
+# TEMPLATES_DIR = Path(__file__).parent.parent / "templates" / "resume"
 
-_env = Environment(
-    loader=FileSystemLoader(str(TEMPLATES_DIR)),
-    autoescape=select_autoescape(["html"]),
-)
+# _env = Environment(
+#     loader=FileSystemLoader(str(TEMPLATES_DIR)),
+#     autoescape=select_autoescape(["html"]),
+# )
 
-def render_resume_html(resume: ResumeData, template_id: TemplateId = "minimal") -> str:
-    template = _env.get_template(f"{template_id}.html")
-    return template.render(resume=resume)
+# def render_resume_html(resume: ResumeData, template_id: TemplateId = "minimal") -> str:
+#     template = _env.get_template(f"{template_id}.html")
+#     return template.render(resume=resume)
 
 
 # Mocking schemas for self-contained context
@@ -40,19 +39,19 @@ class ResumeService:
                 id="modern",
                 name="Modern",
                 description="Contemporary layout with subtle accents",
-                preview="modern",
+                preview="modern.png",
             ),
             "classic": Template(
                 id="classic",
                 name="Classic",
                 description="Traditional format preferred by recruiters",
-                preview="classic",
+                preview="classic.png",
             ),
             "developer": Template(
                 id="developer",
                 name="Developer",
                 description="Technical focus with skills emphasis",
-                preview="developer",
+                preview="developer.png",
             ),
             "modern-sidebar": Template(
                 id="modern-sidebar",
@@ -83,7 +82,6 @@ class ResumeService:
         if not template_meta:
             raise ValueError(f"Template '{template_id}' is not registered.")
 
-        # Determine design variant tokens if passed
         variant = None
         if variant_id and template_meta.variants:
             variant = next((v for v in template_meta.variants if v.id == variant_id), template_meta.variants[0])
@@ -96,5 +94,4 @@ class ResumeService:
                 variant=variant
             )
         except TemplateNotFound:
-            # Fallback handling or specialized alerting
             raise FileNotFoundError(f"Template file '{template_id}.html' missing from disk.")

@@ -11,10 +11,8 @@ setup:
 	@echo "Setting up environment..."
 	cp .env.example .env || true
 
-# ----------------------------
-# Docker (Main Workflow)
-# ----------------------------
 
+# Docker
 up:
 	@echo "Starting all services..."
 	$(COMPOSE) up --build
@@ -78,10 +76,8 @@ activate-env-windows:
 activate-env:
 	cd apps/api && source .venv/bin/activate
 
-# ----------------------------
-# Build
-# ----------------------------
 
+# Build
 build:
 	$(COMPOSE) build
 
@@ -95,6 +91,12 @@ clean:
 
 redis-cli:
 	docker exec -it notion-resume-pipeline-redis-1 redis-cli
+
+
+# Scripts
+previews:
+	@echo "Re-generating template asset blueprints..."
+	cd apps/api && python scripts/generate_previews.py
 
 
 health:

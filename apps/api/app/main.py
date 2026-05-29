@@ -5,6 +5,8 @@ from app.schemas.common import HealthResponse
 from app.core.cache import add_cache_headers
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 
 from app.config import settings
 from app.core.logging import close_http_client, get_logger, setup_logging
@@ -45,6 +47,13 @@ app.add_middleware(
     expose_headers=["X-Cache", "X-Cache-TTL"],
 )
 app.include_router(api_router, prefix=settings.api_v1_prefix)
+
+STATIC_DIR = Path(__file__).parent / "static"
+STATIC_DIR.mkdir(exist_ok=True)
+
+# Mount the static directory so files are accessible via browser
+# Example: http://localhost:8000/static/previews/minimal.png
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 @app.get("/")
 async def root() -> dict[str, str]:
