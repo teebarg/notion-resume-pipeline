@@ -244,6 +244,7 @@ export function Dashboard() {
                     <div className="sticky top-0 z-10 flex items-center justify-between px-4 sm:px-6 py-3 bg-background/80 backdrop-blur-md border-b border-border no-print gap-2">
                         <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono min-w-0">
                             <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
+                            <p>preview</p>
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
                             <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => setZoom((z) => Math.max(0.3, z - 0.1))}>

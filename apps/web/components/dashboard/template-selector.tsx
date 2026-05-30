@@ -2,7 +2,6 @@
 
 import { Check } from "lucide-react";
 import { useState, useEffect } from "react";
-import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface TemplateVariant {
@@ -31,6 +30,7 @@ export function TemplateSelector({ selectedTemplateId, selectedVariantId, onSele
     const [templates, setTemplates] = useState<Template[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+
     useEffect(() => {
         const fetchTemplates = async () => {
             try {
@@ -57,7 +57,7 @@ export function TemplateSelector({ selectedTemplateId, selectedVariantId, onSele
         return (
             <div className="flex justify-center items-center h-64">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                <span className="ml-3 text-gray-600 font-medium text-sm">Loading premium templates...</span>
+                <span className="ml-3 text-gray-600 font-medium text-sm">Loading templates...</span>
             </div>
         );
     }
@@ -72,36 +72,54 @@ export function TemplateSelector({ selectedTemplateId, selectedVariantId, onSele
     }
 
     return (
-        <div className="grid grid-cols-1 p-2 gap-2">
-            {templates.map((template) => {
-                const isTemplateSelected = selectedTemplateId === template.id;
+        <div className="grid grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto thin-scrollbar">
+            {templates.map((t: Template) => {
+                const active = t.id === selectedTemplateId;
                 return (
-                    <div
-                        key={template.id}
-                        onClick={() => onSelect(template.id)}
-                        className={`w-full text-left p-3 rounded-lg border transition-all ${isTemplateSelected
-                            ? "border-primary/60 bg-primary/5 ring-1 ring-primary/20"
-                            : "border-border hover:border-foreground/20 bg-card"
+                    <button
+                        key={t.id}
+                        onClick={() => onSelect(t.id)}
+                        className={`group relative text-left rounded-lg border overflow-hidden transition-all ${active
+                            ? "border-primary/60 ring-2 ring-primary/30"
+                            : "border-border hover:border-foreground/30"
                             }`}
                     >
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm font-medium">{template.name}</span>
-                            {isTemplateSelected && <Check className="w-3.5 h-3.5 text-primary" />}
+                        <div className="aspect-[80/110] bg-muted/40 text-foreground/80 p-1.5">
+                            <img alt="Preview" src={`${process.env.NEXT_PUBLIC_API_URL}/static/previews/${t.preview}`} onError={(e) => {
+                                e.currentTarget.src = "https://placehold.co/300x400?text=Not+Available";
+                            }} />
                         </div>
-                        <div className="text-xs text-muted-foreground mt-0.5">{template.description}</div>
-                        {template.variants?.length > 0 && (
-                            <RadioGroup defaultValue={selectedVariantId} className="flex mt-4" onValueChange={(value) => onSelect(template.id, value)}>
-                                {template.variants.map((variant) => {
-                                    return (
-                                        <div>
-                                            <RadioGroupItem className="hidden" value={variant.id} id={variant.id} />
-                                            <Label className="text-[10px] cursor-pointer" htmlFor={variant.id}>{variant.name}</Label>
-                                        </div>
-                                    );
-                                })}
-                            </RadioGroup>
+                        {active && (
+                            <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-primary text-primary-foreground flex items-center justify-center shadow">
+                                <Check className="w-2.5 h-2.5" />
+                            </div>
                         )}
-                    </div>
+                        <div className="p-2 border-t border-border bg-card">
+                            <div className="flex items-center justify-between gap-1">
+                                <span className="text-xs font-medium truncate">{t.name}</span>
+                                {/* <span className="text-[9px] font-mono uppercase text-muted-foreground shrink-0">
+                                        {t.category}
+                                    </span> */}
+                            </div>
+                            {t.variants?.length > 0 && (
+                                <RadioGroup defaultValue={selectedVariantId} className="flex flex-wrap gap-1 mt-4" onValueChange={(value) => onSelect(t.id, value)}>
+                                    {t.variants.map((variant) => {
+                                        return (
+                                            <div key={variant.name}>
+                                                <RadioGroupItem className="hidden" value={variant.id} id={variant.id} />
+                                                {/* <Label className="text-[10px] cursor-pointer" htmlFor={variant.id}>{variant.name}</Label> */}
+                                                <span
+                                                    className="text-[9px] leading-none px-1.5 py-0.5 rounded bg-muted text-muted-foreground"
+                                                >
+                                                    {variant.name}
+                                                </span>
+                                            </div>
+                                        );
+                                    })}
+                                </RadioGroup>
+                            )}
+                        </div>
+                    </button>
                 );
             })}
         </div>

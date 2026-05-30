@@ -118,6 +118,15 @@
     .font-mono {
         font-family: var(--font-mono);
     }
+
+    * {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    
+    *::-webkit-scrollbar {
+        display: none;
+    }
 }
 
 /* Subtle grid backdrop */
@@ -126,3 +135,63 @@
         linear-gradient(to bottom, color-mix(in oklab, var(--foreground) 6%, transparent) 1px, transparent 1px);
     background-size: 32px 32px;
 }
+
+/* globals.css */
+.thin-scrollbar {
+    scrollbar-width: thin;
+    /* Firefox */
+}
+
+.thin-scrollbar::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(100, 100, 100, 0.4);
+    border-radius: 9999px;
+}
+
+.thin-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+
+@utility thin-scrollbar {
+    scrollbar-width: thin;
+  
+    &::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+  
+    &::-webkit-scrollbar-thumb {
+      background: rgba(100, 100, 100, 0.4);
+      border-radius: 9999px;
+    }
+  
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+  }
+
+
+  @layer utilities {
+    .thin-scrollbar {
+      scrollbar-width: thin;
+    }
+  
+    .thin-scrollbar::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+  
+    .thin-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(100, 100, 100, 0.4);
+      border-radius: 9999px;
+    }
+  
+    .thin-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+  }

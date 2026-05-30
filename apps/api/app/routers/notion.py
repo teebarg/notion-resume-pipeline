@@ -100,7 +100,7 @@ async def preview_resume(
         # Handles missing files on disk (Server misconfiguration error)
         logger.exception(f"[preview_resume] Template asset missing on disk - template: {template}")
         return render_error_page(
-            title="Template Error",
+            title="Template Unavailable",
             message="The requested design file is temporarily unavailable.",
             status_code=500,
         )

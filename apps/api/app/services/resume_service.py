@@ -57,7 +57,7 @@ class ResumeService:
                 id="modern-sidebar",
                 name="Modern Sidebar",
                 description="A sleek, asymmetric two-column design optimized for impact.",
-                preview="modern_sidebar.png",
+                preview="modern-sidebar.png",
                 has_sidebar=True,
                 variants=[
                     TemplateVariant(id="classic-slate", name="Slate", primary_color="slate-900", text_color="slate-600"),
