@@ -96,12 +96,9 @@ MOCK_RESUME_DATA = {
 
 async def generate_template_snapshots(output_dir: Path, target_template: str | None = None):
     """Launches a headless browser to render HTML templates to static PNG snapshots."""
-    
-    # 1. Initialize your existing template registry system
     resume_service = ResumeService()
     templates = resume_service.list_templates()
     
-    # Parse schema validation
     validated_mock_data = ResumeData(**MOCK_RESUME_DATA)
     
     # Filter if user explicitly targeted one layout style
@@ -116,7 +113,7 @@ async def generate_template_snapshots(output_dir: Path, target_template: str | N
 
     logger.info(f"Starting snapshot generation engine for {len(templates)} layout profiles...")
 
-    # 2. Spin up Playwright context
+    # Spin up Playwright context
     async with async_playwright() as p:
         # Launch headless browser instance
         browser = await p.chromium.launch(headless=True)
@@ -133,16 +130,15 @@ async def generate_template_snapshots(output_dir: Path, target_template: str | N
             logger.info(f"Rendering blueprint canvas: [{template_meta.name}] -> {output_file.name}")
             
             try:
-                # 3. Render HTML using your existing service layer
                 html_content = resume_service.render(resume=validated_mock_data, template_id=template_meta.id)
                 
-                # 4. Inject raw HTML string straight into the headless page DOM context
+                # Inject raw HTML string straight into the headless page DOM context
                 await page.set_content(html_content)
                 
                 # Wait briefly for web fonts or dynamic layouts to structurally settle
                 await page.wait_for_load_state("networkidle")
                 
-                # 5. Take screenshot of the top half / full view
+                # Take screenshot of the top half / full view
                 await page.screenshot(
                     path=str(output_file),
                     type="png",

@@ -24,4 +24,4 @@ async def test_list_templates(client: AsyncClient) -> None:
     assert response.status_code == 200
     templates = response.json()
     assert len(templates) == 4
-    assert templates[0]["id"] in ("minimal", "modern", "classic", "developer")
+    assert templates[0]["id"] in ("minimal", "modern", "classic", "developer", "executive", "modern-canva")

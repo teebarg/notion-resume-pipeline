@@ -3,21 +3,6 @@ from typing import List, Dict, Any, Optional
 from jinja2 import Environment, FileSystemLoader, select_autoescape, TemplateNotFound
 from app.schemas.resume import ResumeData, Template, TemplateVariant, TemplateId
 
-# TEMPLATES_DIR = Path(__file__).parent.parent / "templates" / "resume"
-
-# _env = Environment(
-#     loader=FileSystemLoader(str(TEMPLATES_DIR)),
-#     autoescape=select_autoescape(["html"]),
-# )
-
-# def render_resume_html(resume: ResumeData, template_id: TemplateId = "minimal") -> str:
-#     template = _env.get_template(f"{template_id}.html")
-#     return template.render(resume=resume)
-
-
-# Mocking schemas for self-contained context
-TemplateId = str
-
 class ResumeService:
     def __init__(self, templates_dir: Optional[Path] = None):
         self.templates_dir = templates_dir or (Path(__file__).parent.parent / "templates" / "resume")
@@ -29,6 +14,30 @@ class ResumeService:
         # Centralized Template Registry
         # In a massive app, this could be loaded dynamically from YAML/JSON files in the template directories
         self._templates: Dict[TemplateId, Template] = {
+            "ats-resume": Template(
+                id="ats-resume",
+                name="ATS Resume",
+                description="Clean and simple single-column layout focusing on typography.",
+                preview="ats-resume.png"
+            ),
+            "product-focused": Template(
+                id="product-focused",
+                name="Product Focused",
+                description="Clean and simple single-column layout focusing on typography.",
+                preview="product-focused.png"
+            ),
+            "engineer": Template(
+                id="engineer",
+                name="Engineer Resume",
+                description="Clean and simple single-column layout focusing on typography.",
+                preview="engineer.png"
+            ),
+            "meridian": Template(
+                id="meridian",
+                name="Meridian",
+                description="Clean and simple single-column layout focusing on typography.",
+                preview="meridian.png"
+            ),
             "minimal": Template(
                 id="minimal",
                 name="Minimal",
@@ -47,11 +56,53 @@ class ResumeService:
                 description="Traditional format preferred by recruiters",
                 preview="classic.png",
             ),
+            "developer-focus": Template(
+                id="developer-focus",
+                name="Developer Focus",
+                description="Technical focus with skills emphasis",
+                preview="developer-focus.png",
+            ),
             "developer": Template(
                 id="developer",
                 name="Developer",
                 description="Technical focus with skills emphasis",
                 preview="developer.png",
+            ),
+            "executive": Template(
+                id="executive",
+                name="Executive Briefing",
+                description="A premium, McKinsey-style layout engineered for senior leaders, emphasizing strategy, scale, and business outcomes.",
+                preview="executive.png"
+            ),
+            "modern-canva": Template(
+                id="modern-canva",
+                name="Modern Canva",
+                description="A premium, McKinsey-style layout engineered for senior leaders, emphasizing strategy, scale, and business outcomes.",
+                preview="modern-canva.png"
+            ),
+             "bento-dark": Template(
+                id="bento-dark",
+                name="Bento Dark",
+                description="A premium, McKinsey-style layout engineered for senior leaders, emphasizing strategy, scale, and business outcomes.",
+                preview="bento-dark.png"
+            ),
+            "geometric-edge": Template(
+                id="geometric-edge",
+                name="Geometric Edge",
+                description="A premium, McKinsey-style layout engineered for senior leaders, emphasizing strategy, scale, and business outcomes.",
+                preview="geometric-edge.png"
+            ),
+            "split-onyx": Template(
+                id="split-onyx",
+                name="Split Onyx",
+                description="A premium, McKinsey-style layout engineered for senior leaders, emphasizing strategy, scale, and business outcomes.",
+                preview="split-onyx.png"
+            ),
+            "minimal-geometric-split": Template(
+                id="minimal-geometric-split",
+                name="Minimal Geometric Split",
+                description="A premium, McKinsey-style layout engineered for senior leaders, emphasizing strategy, scale, and business outcomes.",
+                preview="minimal-geometric-split.png"
             ),
             "modern-sidebar": Template(
                 id="modern-sidebar",

@@ -202,10 +202,7 @@ def _parse_projects(nodes: list[ContentNode]) -> list[Project]:
             if tech:
                 current.tech.extend(tech)
             else:
-                if current.description:
-                    current.description += f" {node.text}"
-                else:
-                    current.description = node.text
+                current.highlights.extend(node.text)
  
     if current is not None:
         entries.append(current)

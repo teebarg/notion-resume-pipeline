@@ -106,7 +106,7 @@ export function TemplateSelector({ selectedTemplateId, selectedVariantId, onSele
                                     {t.variants.map((variant) => {
                                         return (
                                             <div key={variant.name}>
-                                                <RadioGroupItem className="hidden" value={variant.id} id={variant.id} />
+                                                <RadioGroupItem key={variant.id} className="hidden" value={variant.id} id={variant.id} />
                                                 {/* <Label className="text-[10px] cursor-pointer" htmlFor={variant.id}>{variant.name}</Label> */}
                                                 <span
                                                     className="text-[9px] leading-none px-1.5 py-0.5 rounded bg-muted text-muted-foreground"

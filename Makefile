@@ -96,7 +96,7 @@ redis-cli:
 # Scripts
 previews:
 	@echo "Re-generating template asset blueprints..."
-	cd apps/api && python scripts/generate_previews.py
+	cd apps/api && python scripts/generate_previews.py $(if $(TEMPLATE),--template $(TEMPLATE))
 
 
 health:

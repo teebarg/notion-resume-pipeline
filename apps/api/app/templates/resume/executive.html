@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap"
+        rel="stylesheet" />
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --ink: #0d0d0d;
+            --ink-2: #2a2a2a;
+            --ink-3: #5a5a5a;
+            --ink-4: #8a8a8a;
+            --rule: #d8d0c4;
+            --rule-lt: #ece8e2;
+            --cream: #f9f7f4;
+            --gold: #b8956a;
+            --gold-lt: #d4b896;
+            --white: #ffffff;
+
+            --serif: 'Cormorant Garamond', Georgia, serif;
+            --sans: 'DM Sans', system-ui, sans-serif;
+        }
+
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        @media print {
+
+            html,
+            body {
+                background: white !important;
+            }
+
+            .page {
+                box-shadow: none !important;
+                margin: 0 !important;
+                border-radius: 0 !important;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            section,
+            .job,
+            .project-card {
+                page-break-inside: avoid;
+            }
+        }
+
+        body {
+            background: #e8e4de;
+            font-family: var(--sans);
+            font-size: 13px;
+            color: var(--ink-2);
+            -webkit-font-smoothing: antialiased;
+            line-height: 1.5;
+        }
+
+        /* ── PAGE SHELL ───────────────────────────────── */
+        .page {
+            width: 779px;
+            min-height: 1123px;
+            background: var(--white);
+            display: grid;
+            grid-template-columns: 258px 1fr;
+            grid-template-rows: auto 1fr;
+            box-shadow: 0 8px 48px rgba(0, 0, 0, .18), 0 2px 8px rgba(0, 0, 0, .10);
+        }
+
+        /* ── HEADER (full-width top band) ─────────────── */
+        .hd {
+            grid-column: 1 / -1;
+            background: var(--ink);
+            padding: 40px 48px 36px;
+            display: grid;
+            grid-template-columns: 258px 1fr;
+            gap: 0;
+            align-items: end;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* subtle hatching texture */
+        .hd::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: repeating-linear-gradient(-45deg,
+                    transparent,
+                    transparent 3px,
+                    rgba(255, 255, 255, .025) 3px,
+                    rgba(255, 255, 255, .025) 4px);
+            pointer-events: none;
+        }
+
+        .hd-identity {
+            display: flex;
+            align-items: flex-end;
+            gap: 22px;
+            padding-right: 36px;
+        }
+
+        /* Photo / initials badge */
+        .avatar {
+            width: 72px;
+            height: 72px;
+            border-radius: 2px;
+            flex-shrink: 0;
+            overflow: hidden;
+            border: 1.5px solid var(--gold);
+            background: var(--ink-2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-initials {
+            font-family: var(--serif);
+            font-size: 26px;
+            font-weight: 300;
+            color: var(--gold-lt);
+            letter-spacing: .04em;
+        }
+
+        .hd-name-block {
+            flex: 1;
+        }
+
+        .hd-name {
+            font-family: var(--serif);
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--white);
+            letter-spacing: .01em;
+            line-height: 1.1;
+        }
+
+        .hd-title {
+            margin-top: 6px;
+            font-family: var(--sans);
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: .16em;
+            text-transform: uppercase;
+            color: var(--gold);
+        }
+
+        .hd-summary {
+            padding-left: 36px;
+            border-left: 1px solid rgba(255, 255, 255, .12);
+        }
+
+        .hd-summary p {
+            font-family: var(--serif);
+            font-size: 14px;
+            font-weight: 300;
+            font-style: italic;
+            color: rgba(255, 255, 255, .72);
+            line-height: 1.7;
+        }
+
+        /* gold rule beneath header */
+        .hd-rule {
+            grid-column: 1 / -1;
+            height: 3px;
+            background: linear-gradient(to right, var(--gold), var(--gold-lt) 40%, transparent);
+        }
+
+        /* ── SIDEBAR ──────────────────────────────────── */
+        .sidebar {
+            background: var(--cream);
+            padding: 36px 28px 40px;
+            border-right: 1px solid var(--rule-lt);
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        .sb-section-label {
+            font-family: var(--sans);
+            font-size: 8.5px;
+            font-weight: 600;
+            letter-spacing: .22em;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 12px;
+        }
+
+        /* Contact */
+        .contact-list {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+
+        .contact-item {}
+
+        .contact-item .ci-label {
+            font-size: 8px;
+            font-weight: 600;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: var(--ink-4);
+        }
+
+        .contact-item .ci-val {
+            font-size: 11px;
+            color: var(--ink-2);
+            word-break: break-all;
+        }
+
+        .contact-item a {
+            color: var(--gold);
+            text-decoration: none;
+        }
+
+        .contact-item a:hover {
+            text-decoration: underline;
+        }
+
+        /* Skills */
+        .skill-group {
+            margin-bottom: 14px;
+        }
+
+        .skill-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .skill-group-name {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--ink-2);
+            margin-bottom: 6px;
+        }
+
+        .skill-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+
+        .skill-chip {
+            font-size: 9.5px;
+            color: var(--ink-3);
+            background: var(--white);
+            border: 1px solid var(--rule);
+            padding: 2px 7px;
+            border-radius: 1px;
+            font-family: var(--sans);
+        }
+
+        /* Education */
+        .edu-entry {
+            margin-bottom: 14px;
+        }
+
+        .edu-entry:last-child {
+            margin-bottom: 0;
+        }
+
+        .edu-degree {
+            font-family: var(--serif);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ink);
+            line-height: 1.3;
+        }
+
+        .edu-field {
+            font-size: 10px;
+            color: var(--ink-3);
+            margin-top: 1px;
+        }
+
+        .edu-inst {
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--ink-2);
+            margin-top: 2px;
+        }
+
+        .edu-dates {
+            font-size: 9.5px;
+            color: var(--ink-4);
+            margin-top: 1px;
+        }
+
+        /* thin rule separator */
+        .sb-rule {
+            height: 1px;
+            background: var(--rule);
+        }
+
+        /* ── MAIN COLUMN ──────────────────────────────── */
+        .main {
+            padding: 36px 44px 44px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Section heading */
+        .sec-head {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .sec-head-label {
+            font-family: var(--sans);
+            font-size: 8.5px;
+            font-weight: 600;
+            letter-spacing: .22em;
+            text-transform: uppercase;
+            color: var(--gold);
+            white-space: nowrap;
+        }
+
+        .sec-head-rule {
+            flex: 1;
+            height: 1px;
+            background: var(--rule);
+        }
+
+        /* Experience */
+        .job {
+            margin-bottom: 20px;
+        }
+
+        .job:last-child {
+            margin-bottom: 0;
+        }
+
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .job-role {
+            font-family: var(--serif);
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--ink);
+            line-height: 1.2;
+        }
+
+        .job-meta {
+            font-size: 10.5px;
+            color: var(--ink-3);
+            margin-top: 3px;
+        }
+
+        .job-meta .company {
+            font-weight: 600;
+            color: var(--ink-2);
+        }
+
+        .job-dates {
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--ink-4);
+            white-space: nowrap;
+            background: var(--cream);
+            padding: 3px 8px;
+            border: 1px solid var(--rule-lt);
+            border-radius: 1px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .job-highlights {
+            list-style: none;
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .job-highlights li {
+            font-size: 11.5px;
+            color: var(--ink-2);
+            line-height: 1.55;
+            padding-left: 16px;
+            position: relative;
+        }
+
+        .job-highlights li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 5px;
+            height: 1px;
+            background: var(--gold);
+        }
+
+        /* separator between jobs */
+        .job-sep {
+            height: 1px;
+            background: var(--rule-lt);
+            margin: 18px 0;
+        }
+
+        /* Projects */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .project-card {
+            border: 1px solid var(--rule);
+            padding: 14px 16px;
+            border-radius: 1px;
+            background: var(--cream);
+            position: relative;
+        }
+
+        .project-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: var(--gold);
+            border-radius: 1px 0 0 1px;
+        }
+
+        .project-name {
+            font-family: var(--serif);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--ink);
+        }
+
+        .project-link {
+            font-size: 9px;
+            color: var(--gold);
+            text-decoration: none;
+            display: block;
+            margin-top: 2px;
+        }
+
+        .project-desc {
+            font-size: 11px;
+            color: var(--ink-3);
+            margin-top: 6px;
+            line-height: 1.55;
+        }
+
+        .project-tech {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 8px;
+        }
+
+        .project-tech span {
+            font-size: 9px;
+            font-family: 'DM Mono', monospace;
+            color: var(--ink-3);
+            background: var(--white);
+            border: 1px solid var(--rule);
+            padding: 1px 6px;
+            border-radius: 1px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+
+        <!-- ══ HEADER ══════════════════════════════════════════════════════════ -->
+        <header class="hd">
+            <div class="hd-identity">
+                <div class="avatar">
+                    {% if resume.basics.photo %}
+                    <img src="{{ resume.basics.photo }}" alt="{{ resume.basics.name }}" />
+                    {% else %}
+                    <span class="avatar-initials">{{ resume.basics.name[:2].upper() }}</span>
+                    {% endif %}
+                </div>
+                <div class="hd-name-block">
+                    <div class="hd-name">{{ resume.basics.name }}</div>
+                    <div class="hd-title">{{ resume.basics.title }}</div>
+                </div>
+            </div>
+
+            {% if resume.basics.summary %}
+            <div class="hd-summary">
+                <p>{{ resume.basics.summary }}</p>
+            </div>
+            {% endif %}
+        </header>
+        <div class="hd-rule"></div>
+
+        <!-- ══ SIDEBAR ══════════════════════════════════════════════════════════ -->
+        <aside class="sidebar">
+
+            <!-- Contact -->
+            <div>
+                <div class="sb-section-label">Contact</div>
+                <div class="contact-list">
+                    {% if resume.basics.email %}
+                    <div class="contact-item">
+                        <div class="ci-label">Email</div>
+                        <div class="ci-val"><a href="mailto:{{ resume.basics.email }}">{{ resume.basics.email }}</a>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if resume.basics.phone %}
+                    <div class="contact-item">
+                        <div class="ci-label">Phone</div>
+                        <div class="ci-val">{{ resume.basics.phone }}</div>
+                    </div>
+                    {% endif %}
+                    {% if resume.basics.location %}
+                    <div class="contact-item">
+                        <div class="ci-label">Location</div>
+                        <div class="ci-val">{{ resume.basics.location }}</div>
+                    </div>
+                    {% endif %}
+                    {% if resume.basics.website %}
+                    <div class="contact-item">
+                        <div class="ci-label">Website</div>
+                        <div class="ci-val"><a href="{{ resume.basics.website }}">{{ resume.basics.website |
+                                replace("https://","") | replace("http://","") }}</a></div>
+                    </div>
+                    {% endif %}
+                    {% if resume.basics.linkedin %}
+                    <div class="contact-item">
+                        <div class="ci-label">LinkedIn</div>
+                        <div class="ci-val"><a href="{{ resume.basics.linkedin }}">{{ resume.basics.linkedin |
+                                replace("https://www.linkedin.com/in/","") | replace("https://linkedin.com/in/","")
+                                }}</a></div>
+                    </div>
+                    {% endif %}
+                    {% if resume.basics.github %}
+                    <div class="contact-item">
+                        <div class="ci-label">GitHub</div>
+                        <div class="ci-val"><a href="{{ resume.basics.github }}">{{ resume.basics.github |
+                                replace("https://github.com/","") }}</a></div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if resume.skills %}
+            <div class="sb-rule"></div>
+            <div>
+                <div class="sb-section-label">Expertise</div>
+                {% for s in resume.skills %}
+                <div class="skill-group">
+                    <div class="skill-group-name">{{ s.name }}</div>
+                    <div class="skill-chips">
+                        {% for item in s.stack %}
+                        <span class="skill-chip">{{ item }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if resume.education %}
+            <div class="sb-rule"></div>
+            <div>
+                <div class="sb-section-label">Education</div>
+                {% for e in resume.education %}
+                <div class="edu-entry">
+                    <div class="edu-degree">{{ e.degree }}</div>
+                    {% if e.field %}<div class="edu-field">{{ e.field }}</div>{% endif %}
+                    <div class="edu-inst">{{ e.institution }}</div>
+                    <div class="edu-dates">{{ e.startDate }}{% if e.endDate %} – {{ e.endDate }}{% endif %}</div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+        </aside>
+
+        <!-- ══ MAIN ═════════════════════════════════════════════════════════════ -->
+        <main class="main">
+
+            {% if resume.experience %}
+            <section>
+                <div class="sec-head">
+                    <span class="sec-head-label">Professional Experience</span>
+                    <div class="sec-head-rule"></div>
+                </div>
+
+                {% for job in resume.experience %}
+                {% if not loop.first %}<div class="job-sep"></div>{% endif %}
+                <div class="job">
+                    <div class="job-header">
+                        <div>
+                            <div class="job-role">{{ job.role }}</div>
+                            <div class="job-meta">
+                                <span class="company">{{ job.company }}</span>
+                                {% if job.location %} &nbsp;·&nbsp; {{ job.location }}{% endif %}
+                            </div>
+                        </div>
+                        <div class="job-dates">{{ job.startDate }} – {{ "Present" if job.current else job.endDate }}
+                        </div>
+                    </div>
+                    {% if job.highlights %}
+                    <ul class="job-highlights">
+                        {% for h in job.highlights %}
+                        <li>{{ h }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </section>
+            {% endif %}
+
+            {% if resume.projects %}
+            <section>
+                <div class="sec-head">
+                    <span class="sec-head-label">Selected Initiatives</span>
+                    <div class="sec-head-rule"></div>
+                </div>
+                <div class="projects-grid">
+                    {% for p in resume.projects %}
+                    <div class="project-card">
+                        <div class="project-name">{{ p.name }}</div>
+                        {% if p.link %}<a class="project-link" href="{{ p.link }}">{{ p.link | replace("https://","")
+                            }}</a>{% endif %}
+                        <p class="project-desc">{{ p.description }}</p>
+                        {% if p.tech %}
+                        <div class="project-tech">
+                            {% for t in p.tech %}<span>{{ t }}</span>{% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+            {% endif %}
+
+        </main>
+
+    </div>
+</body>
+
+</html>

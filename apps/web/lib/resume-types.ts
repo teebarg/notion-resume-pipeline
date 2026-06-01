@@ -23,6 +23,7 @@ export interface Experience {
 export interface Project {
   name: string;
   description: string;
+  highlights: string[];
   tech: string[];
   link?: string | null;
 }
@@ -55,7 +56,7 @@ export interface ResumeResponse {
   message: string;
 }
 
-export type TemplateId = "minimal" | "modern" | "classic" | "developer" | "modern-sidebar";
+export type TemplateId = "ats-resume" | "developer-focus" | "product-focused" | "engineer" | "meridian" | "minimal" | "modern" | "classic" | "developer" | "executive" | "modern-sidebar" | "modern-canva" | "geometric-edge" | "split-onyx" | "minimal-geometric-split";
 
 export interface Template {
   id: TemplateId

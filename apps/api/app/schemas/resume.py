@@ -2,7 +2,7 @@ from typing import Literal, List
 
 from pydantic import BaseModel, Field
 
-TemplateId = Literal["minimal", "modern", "classic", "developer", "modern-sidebar"]
+TemplateId = Literal["ats-resume", "developer-focus", "product-focused", "engineer", "meridian", "minimal", "modern", "classic", "developer", "executive", "modern-sidebar", "modern-canva", "bento-dark", "geometric-edge", "split-onyx", "minimal-geometric-split"]
 
 class Basics(BaseModel):
     name: str = ""
@@ -29,6 +29,7 @@ class Experience(BaseModel):
 class Project(BaseModel):
     name: str = ""
     description: str = ""
+    highlights: list[str] = []
     tech: list[str] = []
     link: str | None = None
 
