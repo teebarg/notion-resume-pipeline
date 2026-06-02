@@ -38,6 +38,12 @@ class ResumeService:
                 description="Clean and simple single-column layout focusing on typography.",
                 preview="meridian.png"
             ),
+             "ats-meridian": Template(
+                id="ats-meridian",
+                name="ATS Meridian",
+                description="Clean and simple single-column layout focusing on typography.",
+                preview="ats-meridian.png"
+            ),
             "minimal": Template(
                 id="minimal",
                 name="Minimal",

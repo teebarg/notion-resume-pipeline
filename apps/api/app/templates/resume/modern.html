@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ resume.basics.name }} — Resume</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
     <style>
         * {
             margin: 0;
@@ -21,17 +22,18 @@
 
         /* ── Header ── */
         .header {
-            display: grid;
-            grid-template-columns: 38% 62%;
+            display: table;
+            width: 100%;
             min-height: 130px;
+            table-layout: fixed;
         }
 
         .header-left {
+            display: table-cell;
+            width: 38%;
             background: #5a5a5a;
             padding: 28px 28px 20px;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
+            vertical-align: bottom;
         }
 
         .header-left .name {
@@ -53,20 +55,25 @@
         }
 
         .header-right {
+            display: table-cell;
+            width: 62%;
             background: #4a4a4a;
         }
 
-        /* ── Two-column body ── */
+        /* ── Two-column body — TABLE layout for reliable print/PDF ── */
         .body {
-            display: grid;
-            grid-template-columns: 38% 62%;
-            min-height: calc(100vh - 130px);
+            display: table;
+            width: 100%;
+            table-layout: fixed;
         }
 
         /* ── Left sidebar ── */
         .sidebar {
+            display: table-cell;
+            width: 38%;
             background: #e8e8e8;
             padding: 28px 24px;
+            vertical-align: top;
         }
 
         .sidebar-section {
@@ -79,7 +86,6 @@
             text-transform: uppercase;
             letter-spacing: 1.2px;
             color: #2e2e2e;
-            border-bottom: none;
             margin-bottom: 12px;
         }
 
@@ -147,7 +153,6 @@
             padding-left: 16px;
         }
 
-        /* Certifications / References */
         .sidebar-list {
             list-style: disc;
             padding-left: 16px;
@@ -160,15 +165,13 @@
             line-height: 1.4;
         }
 
-        .plain-text {
-            font-size: 12px;
-            color: #4a4a4a;
-        }
-
         /* ── Right main ── */
         .main {
+            display: table-cell;
+            width: 62%;
             background: #fff;
             padding: 28px 30px;
+            vertical-align: top;
         }
 
         .main-section {
@@ -266,22 +269,24 @@
             color: #555;
         }
 
+        .fa-icon {
+            width: 16px;
+            margin-top: 4px;
+        }
+
         @media print {
+
+            html,
             body {
                 background: #fff;
-            }
-
-            .header,
-            .body {
-                page-break-inside: avoid;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
         }
     </style>
 </head>
 
 <body>
-
-    <!-- ═══════════════ HEADER ═══════════════ -->
     <div class="header">
         <div class="header-left">
             <div class="name">{{ resume.basics.name }}</div>
@@ -292,13 +297,11 @@
         <div class="header-right"></div>
     </div>
 
-    <!-- ═══════════════ BODY ═══════════════ -->
     <div class="body">
 
         <!-- ── LEFT SIDEBAR ── -->
         <aside class="sidebar">
 
-            <!-- Contact -->
             {% if resume.basics.email or resume.basics.phone or resume.basics.website or resume.basics.linkedin or
             resume.basics.github or resume.basics.location %}
             <div class="sidebar-section">
@@ -310,16 +313,17 @@
                 <div class="contact-item">Phone: {{ resume.basics.phone }}</div>
                 {% endif %}
                 {% if resume.basics.website %}
-                <div class="contact-item">Website: <a href="{{ resume.basics.website }}">{{ resume.basics.website }}</a>
-                </div>
+                <div class="contact-item"><i class="fa-solid fa-envelope fa-icon"></i>Website: <a
+                        href="{{ resume.basics.website }}">{{ resume.basics.website
+                        }}</a></div>
                 {% endif %}
                 {% if resume.basics.linkedin %}
                 <div class="contact-item">LinkedIn: <a href="{{ resume.basics.linkedin }}">{{ resume.basics.linkedin
                         }}</a></div>
                 {% endif %}
                 {% if resume.basics.github %}
-                <div class="contact-item">GitHub: <a href="{{ resume.basics.github }}">{{ resume.basics.github }}</a>
-                </div>
+                <div class="contact-item">GitHub: <a href="{{ resume.basics.github }}">{{ resume.basics.github
+                        }}</a></div>
                 {% endif %}
                 {% if resume.basics.location %}
                 <div class="contact-item">Location: {{ resume.basics.location }}</div>
@@ -327,7 +331,6 @@
             </div>
             {% endif %}
 
-            <!-- Education -->
             {% if resume.education %}
             <div class="sidebar-section">
                 <h3>Education</h3>
@@ -347,7 +350,6 @@
             </div>
             {% endif %}
 
-            <!-- Skills -->
             {% if resume.skills %}
             <div class="sidebar-section">
                 <h3>Skills</h3>
@@ -377,7 +379,6 @@
         <!-- ── MAIN CONTENT ── -->
         <main class="main">
 
-            <!-- Summary -->
             {% if resume.basics.summary %}
             <div class="main-section">
                 <h2>Summary</h2>
@@ -385,7 +386,6 @@
             </div>
             {% endif %}
 
-            <!-- Work Experience -->
             {% if resume.experience %}
             <div class="main-section">
                 <h2>Work Experience</h2>
@@ -415,7 +415,6 @@
             </div>
             {% endif %}
 
-            <!-- Projects -->
             {% if resume.projects %}
             <div class="main-section">
                 <h2>Projects</h2>
@@ -424,6 +423,13 @@
                     <div class="project-name">{{ project.name }}</div>
                     {% if project.description %}
                     <div class="project-desc">{{ project.description }}</div>
+                    {% endif %}
+                    {% if project.highlights %}
+                    <ul class="exp-highlights">
+                        {% for point in project.highlights %}
+                        <li>{{ point }}</li>
+                        {% endfor %}
+                    </ul>
                     {% endif %}
                     {% if project.tech %}
                     <div class="project-tech">Tech: {{ project.tech | join(', ') }}</div>
@@ -438,7 +444,6 @@
 
         </main>
     </div>
-
 </body>
 
 </html>

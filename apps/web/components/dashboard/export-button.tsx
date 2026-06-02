@@ -4,9 +4,10 @@ import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Spinner } from "@/components/ui/spinner";
-import { Download, FileText, ChevronDown } from "lucide-react";
+import { Download, FileText, ChevronDown, FileDown } from "lucide-react";
 import type { ResumeData, TemplateId } from "@/lib/resume-types";
 import { toast } from "sonner";
+import { downloadMarkdown } from "@/lib/resume-markdown";
 
 interface ExportButtonProps {
     pageId: string | null;
@@ -64,6 +65,11 @@ export function ExportButton({ pageId, data, template, disabled }: ExportButtonP
         URL.revokeObjectURL(url);
     };
 
+    const handleExportMarkdown = () => {
+        downloadMarkdown(data);
+        toast("Markdown exported", { description: `${data.basics.name}.md downloaded.` });
+    };
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -81,6 +87,10 @@ export function ExportButton({ pageId, data, template, disabled }: ExportButtonP
                 <DropdownMenuItem onClick={handleExportJSON}>
                     <Download className="mr-2 h-4 w-4" />
                     Export as JSON
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleExportMarkdown}>
+                    <FileDown className="mr-2 h-4 w-4" />
+                    Export as Markdown
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

@@ -48,8 +48,6 @@ async def headless_notion_sync(
         )
 
     payload = await request.json()
-    
-    # Extract the updated page or database item ID from Notion's event payload
     page_id = payload.get("data", {}).get("id") or payload.get("page_id")
     event_type = payload.get("event", {}).get("type") # e.g., "page.updated"
 

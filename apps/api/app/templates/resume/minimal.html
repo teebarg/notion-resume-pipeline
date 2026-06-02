@@ -17,39 +17,61 @@
 <body class="bg-white text-gray-900 font-sans p-10 max-w-[794px] mx-auto">
 
     <!-- Basics -->
-    <div class="mb-6">
-        <h1 class="text-3xl font-bold">{{ resume.basics.name }}</h1>
-        <p class="text-lg text-gray-500">{{ resume.basics.title }}</p>
-        <p class="text-sm text-gray-400 mt-1">
-            {{ resume.basics.email }}
-            {% if resume.basics.location %} · {{ resume.basics.location }}{% endif %}
-            {% if resume.basics.website %} · {{ resume.basics.website }}{% endif %}
-            {% if resume.basics.linkedin %} · {{ resume.basics.linkedin }}{% endif %}
-            {% if resume.basics.github %} · {{ resume.basics.github }}{% endif %}
-            {% if resume.basics.phone %} · {{ resume.basics.phone }}{% endif %}
+    <div class="mb-8 pb-6 border-b-2 border-gray-900">
+        <h1 class="text-3xl font-bold tracking-tight">{{ resume.basics.name }}</h1>
+        <p class="text-base font-medium text-indigo-600 mt-0.5">{{ resume.basics.title }}</p>
+        <p class="text-sm text-gray-400 mt-2 flex flex-wrap gap-x-3">
+            {% if resume.basics.email %}
+            <span>{{ resume.basics.email }}</span>
+            {% endif %}
+            {% if resume.basics.phone %}
+            <span class="text-gray-300">·</span><span>{{ resume.basics.phone }}</span>
+            {% endif %}
+            {% if resume.basics.location %}
+            <span class="text-gray-300">·</span><span>{{ resume.basics.location }}</span>
+            {% endif %}
+            {% if resume.basics.website %}
+            <span class="text-gray-300">·</span><a href="{{ resume.basics.website }}"
+                class="hover:text-indigo-500 transition-colors">{{ resume.basics.website }}</a>
+            {% endif %}
+            {% if resume.basics.linkedin %}
+            <span class="text-gray-300">·</span><a href="{{ resume.basics.linkedin }}"
+                class="hover:text-indigo-500 transition-colors">{{ resume.basics.linkedin }}</a>
+            {% endif %}
+            {% if resume.basics.github %}
+            <span class="text-gray-300">·</span><a href="{{ resume.basics.github }}"
+                class="hover:text-indigo-500 transition-colors">{{ resume.basics.github }}</a>
+            {% endif %}
         </p>
         {% if resume.basics.summary %}
-        <p class="mt-3 text-sm text-gray-600">{{ resume.basics.summary }}</p>
+        <p class="mt-3 text-sm text-gray-600 leading-relaxed">{{ resume.basics.summary }}</p>
         {% endif %}
     </div>
 
     <!-- Experience -->
     {% if resume.experience %}
-    <div class="mb-6">
-        <h2 class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Experience</h2>
+    <div class="mb-7">
+        <h2 class="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-500 mb-4">Experience</h2>
         {% for job in resume.experience %}
-        <div class="mb-4">
+        <div class="mb-5">
             <div class="flex justify-between items-baseline">
-                <span class="font-semibold">{{ job.role }}</span>
-                <span class="text-xs text-gray-400">{{ job.startDate }} – {{ "Present" if job.current else job.endDate
-                    }}</span>
+                <span class="font-semibold text-gray-900">{{ job.role }}</span>
+                <span class="text-xs text-gray-400 tabular-nums">{{ job.startDate }} – {{ "Present" if job.current else
+                    job.endDate }}</span>
             </div>
-            <div class="text-sm text-gray-500">{{ job.company }}{% if job.location %} · {{ job.location }}{% endif %}
-            </div>
+            <div class="text-sm text-indigo-500 font-medium mt-0.5">{{ job.company }}{% if job.location %} <span
+                    class="text-gray-400 font-normal">· {{ job.location }}</span>{% endif %}</div>
             {% if job.highlights %}
-            <ul class="mt-1 list-disc list-inside text-sm text-gray-600 space-y-0.5">
+            <ul class="mt-1.5 list-disc list-inside text-sm text-gray-600 space-y-0.5">
                 {% for h in job.highlights %}<li>{{ h }}</li>{% endfor %}
             </ul>
+            {% endif %}
+            {% if job.techs %}
+            <div class="mt-2 flex flex-wrap gap-1.5">
+                {% for t in job.techs %}
+                <span class="text-[11px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded font-medium">{{ t }}</span>
+                {% endfor %}
+            </div>
             {% endif %}
         </div>
         {% endfor %}
@@ -58,17 +80,29 @@
 
     <!-- Projects -->
     {% if resume.projects %}
-    <div class="mb-6">
-        <h2 class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Projects</h2>
+    <div class="mb-7">
+        <h2 class="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-500 mb-4">Projects</h2>
         {% for p in resume.projects %}
-        <div class="mb-3">
+        <div class="mb-4">
             <div class="flex justify-between items-baseline">
-                <span class="font-semibold">{{ p.name }}</span>
-                {% if p.link %}<a href="{{ p.link }}" class="text-xs text-blue-500">{{ p.link }}</a>{% endif %}
+                <span class="font-semibold text-gray-900">{{ p.name }}</span>
+                {% if p.link %}<a href="{{ p.link }}" class="text-xs text-indigo-400 hover:text-indigo-600">{{ p.link
+                    }}</a>{% endif %}
             </div>
-            <p class="text-sm text-gray-600">{{ p.description }}</p>
+            {% if p.description %}
+            <p class="text-sm text-gray-600 mt-0.5">{{ p.description }}</p>
+            {% endif %}
+            {% if p.highlights %}
+            <ul class="mt-1.5 list-disc list-inside text-sm text-gray-600 space-y-0.5">
+                {% for h in p.highlights %}<li>{{ h }}</li>{% endfor %}
+            </ul>
+            {% endif %}
             {% if p.tech %}
-            <p class="text-xs text-gray-400 mt-0.5">{{ p.tech | join(", ") }}</p>
+            <div class="mt-2 flex flex-wrap gap-1.5">
+                {% for t in p.tech %}
+                <span class="text-[11px] bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded font-medium">{{ t }}</span>
+                {% endfor %}
+            </div>
             {% endif %}
         </div>
         {% endfor %}
@@ -77,12 +111,12 @@
 
     <!-- Skills -->
     {% if resume.skills %}
-    <div class="mb-6">
-        <h2 class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Skills</h2>
+    <div class="mb-7">
+        <h2 class="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-500 mb-4">Skills</h2>
         {% for s in resume.skills %}
-        <div class="mb-1 text-sm">
-            <span class="font-medium">{{ s.name }}:</span>
-            <span class="text-gray-600">{{ s.stack | join(", ") }}</span>
+        <div class="mb-1.5 text-sm">
+            <span class="font-semibold text-gray-800">{{ s.name }}:</span>
+            <span class="text-gray-500">{{ s.stack | join(", ") }}</span>
         </div>
         {% endfor %}
     </div>
@@ -91,14 +125,15 @@
     <!-- Education -->
     {% if resume.education %}
     <div class="mb-6">
-        <h2 class="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-3">Education</h2>
+        <h2 class="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-500 mb-4">Education</h2>
         {% for e in resume.education %}
-        <div class="mb-2">
+        <div class="mb-2.5">
             <div class="flex justify-between items-baseline">
-                <span class="font-semibold">{{ e.degree }} in {{ e.field }}</span>
-                <span class="text-xs text-gray-400">{{ e.startDate }} – {{ e.endDate }}</span>
+                <span class="font-semibold text-gray-900">{{ e.degree }}{% if e.field %} in {{ e.field }}{% endif
+                    %}</span>
+                <span class="text-xs text-gray-400 tabular-nums">{{ e.startDate }} – {{ e.endDate }}</span>
             </div>
-            <div class="text-sm text-gray-500">{{ e.institution }}</div>
+            <div class="text-sm text-indigo-500 font-medium mt-0.5">{{ e.institution }}</div>
         </div>
         {% endfor %}
     </div>

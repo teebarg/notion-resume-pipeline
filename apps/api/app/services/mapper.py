@@ -166,6 +166,10 @@ def _parse_experience(nodes: list[ContentNode]) -> list[Experience]:
         elif node.type in ("bullet", "sub_bullet") and current is not None:
             flat = _flatten_bullet(node)
             current.highlights.extend(flat)
+
+        elif node.type == "quote":
+            skills = _parse_bullet_skills(node.text)
+            current.techs.extend(skills)
  
     if current is not None:
         entries.append(current)
@@ -198,11 +202,7 @@ def _parse_projects(nodes: list[ContentNode]) -> list[Project]:
                 current.description = node.text
  
         elif node.type in ("bullet", "sub_bullet") and current is not None:
-            tech = _extract_tech_from_prefix(node.text)
-            if tech:
-                current.tech.extend(tech)
-            else:
-                current.highlights.extend(node.text)
+            current.highlights.append(node.text)
  
     if current is not None:
         entries.append(current)
@@ -432,6 +432,13 @@ def _split_company_role(text: str) -> tuple[str, str]:
         return match.group(2).strip(), match.group(1).strip()
  
     return text.strip(), ""
+
+def _parse_bullet_skills(skills: str) -> list[str]:
+    return [
+        skill.strip()
+        for skill in re.split(r"\s*[·•|,]\s*", skills)
+        if skill.strip()
+    ]
  
  
 _DATE_PATTERN = re.compile(

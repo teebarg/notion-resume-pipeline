@@ -4,7 +4,7 @@ Notion block parser.
 Converts raw Notion block JSON into a flat, typed intermediate representation.
 
 Output node types:
-  heading_1 | heading_2 | heading_3 | paragraph | bullet | sub_bullet
+  heading_1 | heading_2 | heading_3 | heading_4 | paragraph | bullet | sub_bullet | toggle | quote | callout
 """
 
 from dataclasses import dataclass, field
@@ -13,7 +13,7 @@ from typing import Any
 
 @dataclass
 class ContentNode:
-    type: str          # heading_1 | heading_2 | heading_3 | paragraph | bullet | sub_bullet
+    type: str          # heading_1 | heading_2 | heading_3 | heading_4 | paragraph | bullet | sub_bullet | toggle | quote | callout
     text: str
     depth: int = 0     # nesting depth (0 = top-level, 1 = child bullet, etc.)
     children: list["ContentNode"] = field(default_factory=list)
@@ -47,6 +47,18 @@ def _parse_block(block: dict[str, Any], depth: int) -> ContentNode | None:
         case "heading_3":
             text = _extract_text(block, "heading_3")
             node = ContentNode(type="heading_3", text=text, depth=depth)
+        case "heading_4":
+            text = _extract_text(block, "heading_4")
+            node = ContentNode(type="heading_4", text=text, depth=depth)
+        case "toggle":
+            text = _extract_text(block, "toggle")
+            node = ContentNode(type="toggle", text=text, depth=depth)
+        case "quote":
+            text = _extract_text(block, "quote")
+            node = ContentNode(type="quote", text=text, depth=depth)
+        case "callout":
+            text = _extract_text(block, "callout")
+            node = ContentNode(type="callout", text=text, depth=depth)
         case "paragraph":
             text = _extract_text(block, "paragraph")
             if not text.strip():

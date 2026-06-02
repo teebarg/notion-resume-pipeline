@@ -72,7 +72,7 @@ export function TemplateSelector({ selectedTemplateId, selectedVariantId, onSele
     }
 
     return (
-        <div className="grid grid-cols-2 gap-2 max-h-[60vh] overflow-y-auto thin-scrollbar">
+        <div className="grid grid-cols-2 gap-2 max-h-[50vh] overflow-y-auto thin-scrollbar">
             {templates.map((t: Template) => {
                 const active = t.id === selectedTemplateId;
                 return (
