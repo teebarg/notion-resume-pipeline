@@ -57,7 +57,7 @@ export interface ResumeResponse {
   message: string;
 }
 
-export type TemplateId = "ats-resume" | "developer-focus" | "product-focused" | "engineer" |  "ats-meridian" | "meridian" | "minimal" | "modern" | "classic" | "developer" | "executive" | "modern-sidebar" | "modern-canva" | "geometric-edge" | "split-onyx" | "minimal-geometric-split";
+export type TemplateId = "enhance" | "ats-resume" | "developer-focus" | "product-focused" | "engineer" |  "ats-meridian" | "meridian" | "minimal" | "modern" | "classic" | "developer" | "executive" | "modern-sidebar" | "modern-canva" | "geometric-edge" | "split-onyx" | "minimal-geometric-split";
 
 export interface Template {
   id: TemplateId

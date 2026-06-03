@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ resume.basics.name }} — Resume</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
     <style>
         * {
             margin: 0;
@@ -21,13 +22,13 @@
         }
 
         body {
-            font-family: 'Segoe UI', Arial, sans-serif;
-            font-size: 13px;
+            font-family: ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+            font-size: 16px;
             color: var(--text);
             background: #fff;
             max-width: 860px;
             margin: 0 auto;
-            padding: 44px 52px 52px;
+            padding: 44px 34px;
         }
 
         /* ══════════════════════════
@@ -85,15 +86,19 @@
         }
 
         .header-right ul {
-            list-style: disc;
-            padding-left: 16px;
+            list-style: none;
+            /* padding-left: 16px; */
         }
 
         .header-right ul li {
-            font-size: 12px;
+            font-size: 14px;
             color: var(--muted);
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             line-height: 1.4;
+        }
+
+        .header-right ul li:last-child {
+            margin-bottom: 0;
         }
 
         .header-right ul li a {
@@ -101,15 +106,20 @@
             text-decoration: none;
         }
 
+        .header-right ul li i {
+            margin-right: 12px;
+        }
+
         /* ══════════════════════════
        SUMMARY PARAGRAPH
     ══════════════════════════ */
         .summary {
-            font-size: 13px;
+            /* font-size: 13px; */
             color: var(--muted);
-            line-height: 1.8;
+            line-height: 1.5;
             text-align: justify;
             margin-bottom: 30px;
+            font-style: italic;
         }
 
         /* ══════════════════════════
@@ -153,7 +163,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 13px;
+            /* font-size: 13px; */
             font-weight: 700;
             color: var(--text);
         }
@@ -170,7 +180,7 @@
         }
 
         .exp-dates {
-            font-size: 12px;
+            /* font-size: 12px; */
             color: var(--orange);
             white-space: nowrap;
             font-weight: 600;
@@ -183,7 +193,7 @@
         }
 
         .exp-highlights li {
-            font-size: 12.5px;
+            font-size: 15px;
             color: var(--muted);
             margin-bottom: 5px;
             line-height: 1.65;
@@ -193,7 +203,7 @@
         .exp-techs {
             padding-left: 32px;
             margin-top: 5px;
-            font-size: 11.5px;
+            font-size: 13.5px;
             color: var(--orange);
         }
 
@@ -206,11 +216,19 @@
             gap: 6px 40px;
         }
 
+        .skill-group {
+            margin-bottom: 12px;
+        }
+
+        .skill-group:last-child {
+            margin-bottom: 0;
+        }
+
         .skill-group-title {
             font-size: 13px;
             font-weight: 700;
             color: var(--text);
-            margin-bottom: 8px;
+            margin-bottom: 2px;
         }
 
         .skill-group ul {
@@ -241,20 +259,20 @@
         }
 
         .edu-degree {
-            font-size: 13px;
+            /* font-size: 13px; */
             font-weight: 700;
             color: var(--text);
         }
 
         .edu-dates {
-            font-size: 12px;
+            font-size: 15px;
             color: var(--orange);
             font-weight: 600;
             white-space: nowrap;
         }
 
         .edu-meta {
-            font-size: 12px;
+            font-size: 15px;
             color: var(--muted);
         }
 
@@ -282,7 +300,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 13px;
+            /* font-size: 13px; */
             font-weight: 700;
             color: var(--text);
         }
@@ -308,7 +326,7 @@
         }
 
         .project-desc {
-            font-size: 12.5px;
+            font-size: 15px;
             color: var(--muted);
             padding-left: 18px;
             line-height: 1.65;
@@ -321,7 +339,7 @@
         }
 
         .project-highlights li {
-            font-size: 12.5px;
+            font-size: 15px;
             color: var(--muted);
             margin-bottom: 4px;
             line-height: 1.6;
@@ -356,12 +374,81 @@
         }
 
         @media print {
+            html,
             body {
-                padding: 28px 36px;
+                height: auto !important;
+                background: transparent !important;
+                padding: 20px 30px !important;
+                /* Slightly reduced to gain vertical space */
+                margin: 0 !important;
+            }
+
+            .header {
+                display: block !important;
+                margin-bottom: 15px !important;
+                height: auto !important;
+            }
+
+            .header-left {
+                float: left !important;
+                width: 55% !important;
+            }
+
+            .header-right {
+                float: right !important;
+                width: 40% !important;
+                min-width: unset !important;
+                padding: 10px !important;
+                background: #f4f4f4 !important;
+                /* Keep background color matching */
+                -webkit-print-color-adjust: exact !important;
+                /* Force browser to print background color */
+                print-color-adjust: exact !important;
+            }
+
+            .header::after {
+                content: "";
+                display: table !important;
+                clear: both !important;
+            }
+
+            .summary {
+                margin-bottom: 20px !important;
+                margin-top: 15px !important;
+                clear: both !important;
             }
 
             .section {
-                break-inside: avoid;
+                display: block !important;
+                break-inside: auto !important;
+                page-break-inside: auto !important;
+                margin-bottom: 20px !important;
+            }
+
+            .section-heading,
+            .section-rule {
+                break-after: avoid !important;
+                page-break-after: avoid !important;
+                margin-bottom: 10px !important;
+            }
+
+            .exp-entry,
+            .project-entry,
+            .edu-entry,
+            .skill-group {
+                display: block !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+                margin-bottom: 14px !important;
+            }
+
+            .exp-header {
+                display: flex !important;
+            }
+
+            .exp-highlights li,
+            .project-highlights li {
+                break-inside: auto !important;
             }
         }
     </style>
@@ -388,22 +475,26 @@
         <div class="header-right">
             <ul>
                 {% if resume.basics.location %}
-                <li>{{ resume.basics.location }}</li>
+                <li><i class="fa-solid fa-location-dot fa-xl"></i>{{ resume.basics.location }}</li>
                 {% endif %}
                 {% if resume.basics.phone %}
-                <li>{{ resume.basics.phone }}</li>
+                <li><i class="fa-solid fa-phone fa-xl"></i>{{ resume.basics.phone }}</li>
                 {% endif %}
                 {% if resume.basics.email %}
-                <li><a href="mailto:{{ resume.basics.email }}">{{ resume.basics.email }}</a></li>
+                <li><i class="fa-solid fa-envelope fa-xl"></i><a href="mailto:{{ resume.basics.email }}">{{
+                        resume.basics.email }}</a></li>
                 {% endif %}
                 {% if resume.basics.website %}
-                <li><a href="{{ resume.basics.website }}">{{ resume.basics.website }}</a></li>
+                <li><i class="fa-solid fa-globe fa-xl"></i><a href="{{ resume.basics.website }}">{{
+                        resume.basics.website }}</a></li>
                 {% endif %}
                 {% if resume.basics.linkedin %}
-                <li><a href="{{ resume.basics.linkedin }}">{{ resume.basics.linkedin }}</a></li>
+                <li><i class="fa-brands fa-linkedin fa-xl"></i><a href="{{ resume.basics.linkedin }}">{{
+                        resume.basics.linkedin }}</a></li>
                 {% endif %}
                 {% if resume.basics.github %}
-                <li><a href="{{ resume.basics.github }}">{{ resume.basics.github }}</a></li>
+                <li><i class="fa-brands fa-github fa-xl"></i><a href="{{ resume.basics.github }}">{{
+                        resume.basics.github }}</a></li>
                 {% endif %}
             </ul>
         </div>
@@ -411,7 +502,7 @@
 
     <!-- ═══════════════ SUMMARY ═══════════════ -->
     {% if resume.basics.summary %}
-    <p class="summary">{{ resume.basics.summary }}</p>
+    <p class="summary">"{{ resume.basics.summary }}"</p>
     {% endif %}
 
     <!-- ═══════════════ WORK EXPERIENCE ═══════════════ -->
@@ -452,22 +543,16 @@
     <div class="section">
         <div class="section-heading">Skills</div>
         <hr class="section-rule">
-        <div class="skills-grid">
-            {% for skill in resume.skills %}
-            <div class="skill-group">
-                {% if skill.name %}
-                <div class="skill-group-title">{{ skill.name }}</div>
-                {% endif %}
-                {% if skill.stack %}
-                <ul>
-                    {% for item in skill.stack %}
-                    <li>{{ item }}</li>
-                    {% endfor %}
-                </ul>
-                {% endif %}
-            </div>
-            {% endfor %}
+        {% for s in resume.skills %}
+        {% if s.stack %}
+        <div class="skill-group">
+            {% if s.name %}<div class="skill-group-title">{{ s.name }}</div>{% endif %}
+            <div class="skill-stack">{{ s.stack | join(', ') }}</div>
         </div>
+        {% else %}
+        <div class="skill-group-title">{{ s.name }}</div>
+        {% endif %}
+        {% endfor %}
     </div>
     {% endif %}
 

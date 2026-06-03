@@ -14,7 +14,13 @@ class ResumeService:
         # Centralized Template Registry
         # In a massive app, this could be loaded dynamically from YAML/JSON files in the template directories
         self._templates: Dict[TemplateId, Template] = {
-            "ats-resume": Template(
+            "enhance": Template(
+                id="enhance",
+                name="Enhance",
+                description="Clean and simple single-column layout focusing on typography.",
+                preview="enhance.png"
+            ),
+             "ats-resume": Template(
                 id="ats-resume",
                 name="ATS Resume",
                 description="Clean and simple single-column layout focusing on typography.",
