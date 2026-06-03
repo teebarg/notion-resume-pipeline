@@ -1,200 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+        <style>
+            @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+            @media print {
+                body {
+                    -webkit-print-color-adjust: exact;
+                    background-color: #020618 !important;
+                }
 
-        @media print {
-            body {
-                -webkit-print-color-adjust: exact;
-                background-color: #020618 !important;
+                .print-break-inside-avoid {
+                    page-break-inside: avoid;
+                }
             }
+        </style>
+    </head>
 
-            .print-break-inside-avoid {
-                page-break-inside: avoid;
-            }
-        }
-    </style>
-</head>
-
-<body class="text-gray-800 font-sans antialiased max-w-[950px] mx-auto my-0 shadow-2xl print:shadow-none">
-    <div class="grid grid-cols-12 overflow-hidden">
-        <!-- LEFT SIDEBAR - YELLOW -->
-        <div class="col-span-4 bg-yellow-400 text-slate-950 px-4 pt-8 pb-2 flex flex-col">
-
-            <!-- Name & Title -->
-            <div class="mb-12">
-                <h1 class="text-4xl font-bold tracking-tighter leading-none">{{ resume.basics.name }}</h1>
-                <p class="text-xl font-semibold mt-2 text-slate-800">{{ resume.basics.title }}</p>
-            </div>
-
-            <!-- Contact -->
-            <div class="mb-10">
-                <h3 class="uppercase text-xs tracking-widest font-semibold mb-4 text-slate-700">Contact</h3>
-                <div class="space-y-2.5 text-[15px]">
-                    {% if resume.basics.email %}
-                    <div class="flex items-start gap-3">
-                        <i class="fa-solid fa-envelope mt-1 w-4"></i>
-                        <span>{{ resume.basics.email }}</span>
-                    </div>
-                    {% endif %}
-                    {% if resume.basics.phone %}
-                    <div class="flex items-start gap-3">
-                        <i class="fa-solid fa-phone mt-1 w-4"></i>
-                        <span>{{ resume.basics.phone }}</span>
-                    </div>
-                    {% endif %}
-                    {% if resume.basics.location %}
-                    <div class="flex items-start gap-3">
-                        <i class="fa-solid fa-location-dot mt-1 w-4"></i>
-                        <span>{{ resume.basics.location }}</span>
-                    </div>
-                    {% endif %}
-                    {% if resume.basics.website %}
-                    <div class="flex items-start gap-3">
-                        <i class="fa-solid fa-globe mt-1 w-4"></i>
-                        <span>{{ resume.basics.website }}</span>
-                    </div>
-                    {% endif %}
-                    {% if resume.basics.github %}
-                    <div class="flex items-start gap-3">
-                        <i class="fa-brands fa-github mt-1 w-4"></i>
-                        <span>{{ resume.basics.github }}</span>
-                    </div>
-                    {% endif %}
-                    {% if resume.basics.linkedin %}
-                    <div class="flex items-start gap-3">
-                        <i class="fa-brands fa-linkedin mt-1 w-4"></i>
-                        <span>{{ resume.basics.linkedin }}</span>
-                    </div>
-                    {% endif %}
+    <body class="text-gray-800 font-sans antialiased max-w-[950px] mx-auto my-0 shadow-2xl print:shadow-none">
+        <div class="grid grid-cols-12 overflow-hidden">
+            <!-- LEFT SIDEBAR - YELLOW -->
+            <div class="col-span-4 bg-yellow-400 text-slate-950 px-4 pt-8 pb-2 flex flex-col">
+                <!-- Name & Title -->
+                <div class="mb-12">
+                    <h1 class="text-4xl font-bold tracking-tighter leading-none">{{ resume.basics.name }}</h1>
+                    <p class="text-xl font-semibold mt-2 text-slate-800">{{ resume.basics.title }}</p>
                 </div>
-            </div>
 
-            <!-- Education -->
-            {% if resume.education %}
-            <div class="mb-10">
-                <h3 class="uppercase text-xs tracking-widest font-semibold mb-4 text-slate-700">Education</h3>
-                <div class="space-y-6">
-                    {% for e in resume.education %}
-                    <div>
-                        <p class="font-semibold">{{ e.degree }}</p>
-                        <p class="text-slate-800">{{ e.institution }}</p>
-                        <p class="text-sm text-slate-700">{{ e.startDate }} — {{ e.endDate }}</p>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Skills -->
-            {% if resume.skills %}
-            <div>
-                <h3 class="uppercase text-xs tracking-widest font-semibold mb-4 text-slate-700">Technical Skills</h3>
-                <div class="space-y-5">
-                    {% for s in resume.skills %}
-                    <div>
-                        <p class="font-medium mb-2">{{ s.name }}</p>
-                        <div class="flex flex-wrap gap-2">
-                            {% for item in s.stack %}
-                            <span class="text-sm bg-white/80 px-3 py-1 rounded">{{ item }}</span>
-                            {% endfor %}
+                <!-- Contact -->
+                <div class="mb-10">
+                    <h3 class="uppercase text-xs tracking-widest font-semibold mb-4 text-slate-700">Contact</h3>
+                    <div class="space-y-2.5 text-[15px]">
+                        {% if resume.basics.email %}
+                        <div class="flex items-start gap-3">
+                            <i class="fa-solid fa-envelope mt-1 w-4"></i>
+                            <span>{{ resume.basics.email }}</span>
                         </div>
+                        {% endif %} {% if resume.basics.phone %}
+                        <div class="flex items-start gap-3">
+                            <i class="fa-solid fa-phone mt-1 w-4"></i>
+                            <span>{{ resume.basics.phone }}</span>
+                        </div>
+                        {% endif %} {% if resume.basics.location %}
+                        <div class="flex items-start gap-3">
+                            <i class="fa-solid fa-location-dot mt-1 w-4"></i>
+                            <span>{{ resume.basics.location }}</span>
+                        </div>
+                        {% endif %} {% if resume.basics.website %}
+                        <div class="flex items-start gap-3">
+                            <i class="fa-solid fa-globe mt-1 w-4"></i>
+                            <span>{{ resume.basics.website }}</span>
+                        </div>
+                        {% endif %} {% if resume.basics.github %}
+                        <div class="flex items-start gap-3">
+                            <i class="fa-brands fa-github mt-1 w-4"></i>
+                            <span>{{ resume.basics.github }}</span>
+                        </div>
+                        {% endif %} {% if resume.basics.linkedin %}
+                        <div class="flex items-start gap-3">
+                            <i class="fa-brands fa-linkedin mt-1 w-4"></i>
+                            <span>{{ resume.basics.linkedin }}</span>
+                        </div>
+                        {% endif %}
                     </div>
-                    {% endfor %}
                 </div>
-            </div>
-            {% endif %}
 
-        </div>
+                <!-- Education -->
+                {% if resume.education %}
+                <div class="mb-10">
+                    <h3 class="uppercase text-xs tracking-widest font-semibold mb-4 text-slate-700">Education</h3>
+                    <div class="space-y-6">
+                        {% for e in resume.education %}
+                        <div>
+                            <p class="font-semibold">{{ e.degree }}</p>
+                            <p class="text-slate-800">{{ e.institution }}</p>
+                            <p class="text-sm text-slate-700">{{ e.startDate }} — {{ e.endDate }}</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
 
-        <!-- RIGHT CONTENT - DARK -->
-        <div class="col-span-8 bg-slate-950 text-white px-4 pt-8 pb-2">
-
-            <!-- Summary -->
-            {% if resume.basics.summary %}
-            <section class="mb-10">
-                <h2 class="uppercase text-xs tracking-widest font-semibold mb-3 text-yellow-400">Summary</h2>
-                <p class="text-slate-300 leading-relaxed text-[15.2px] italic">
-                    "{{ resume.basics.summary }}"
-                </p>
-            </section>
-            {% endif %}
-
-            <!-- Experience -->
-            {% if resume.experience %}
-            <section class="mb-10">
-                <h2 class="uppercase text-xs tracking-widest font-semibold mb-6 text-yellow-400">Experience</h2>
-                <div class="space-y-8">
-                    {% for job in resume.experience %}
-                    <div class="print-break-inside-avoid">
-                        <div class="flex justify-between items-baseline">
-                            <div>
-                                <h3 class="font-semibold text-lg">{{ job.role }}</h3>
-                                <p class="text-yellow-400">{{ job.company }}{% if job.location %} • {{ job.location }}{%
-                                    endif %}</p>
+                <!-- Skills -->
+                {% if resume.skills %}
+                <div>
+                    <h3 class="uppercase text-xs tracking-widest font-semibold mb-4 text-slate-700">Technical Skills</h3>
+                    <div class="space-y-5">
+                        {% for s in resume.skills %}
+                        <div>
+                            <p class="font-medium mb-2">{{ s.name }}</p>
+                            <div class="flex flex-wrap gap-2">
+                                {% for item in s.stack %}
+                                <span class="text-sm bg-white/80 px-3 py-1 rounded">{{ item }}</span>
+                                {% endfor %}
                             </div>
-                            <p class="text-sm text-slate-400 whitespace-nowrap">
-                                {{ job.startDate }} — {{ "Present" if job.current else job.endDate }}
-                            </p>
                         </div>
-                        {% if job.highlights %}
-                        <ul class="mt-3 text-slate-300 text-[14.8px] space-y-1.5 list-disc pl-5">
-                            {% for h in job.highlights %}
-                            <li>{{ h }}</li>
-                            {% endfor %}
-                        </ul>
-                        {% endif %}
-                        {% if job.techs %}
-                        <div class="italic text-xs mt-2 bg-gray-800 p-1">{{ job.techs | join(' · ') }}</div>
-                        {% endif %}
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
-            </section>
-            {% endif %}
+                {% endif %}
+            </div>
 
-            <!-- Projects -->
-            {% if resume.projects %}
-            <section>
-                <h2 class="uppercase text-xs tracking-widest font-semibold mb-6 text-yellow-400">Key Projects</h2>
-                <div class="space-y-6">
-                    {% for p in resume.projects %}
-                    <div class="print-break-inside-avoid border-l-2 border-yellow-400 pl-5">
-                        <div class="flex justify-between">
-                            <h3 class="font-semibold">{{ p.name }}</h3>
-                            {% if p.link %}
-                            <a href="{{ p.link }}" class="text-yellow-400 text-sm hover:underline">View Project →</a>
+            <!-- RIGHT CONTENT - DARK -->
+            <div class="col-span-8 bg-slate-950 text-white px-4 pt-8 pb-2">
+                <!-- Summary -->
+                {% if resume.basics.summary %}
+                <section class="mb-10">
+                    <h2 class="uppercase text-xs tracking-widest font-semibold mb-3 text-yellow-400">Summary</h2>
+                    <p class="text-slate-300 leading-relaxed text-[15.2px] italic">"{{ resume.basics.summary }}"</p>
+                </section>
+                {% endif %}
+
+                <!-- Experience -->
+                {% if resume.experience %}
+                <section class="mb-10">
+                    <h2 class="uppercase text-xs tracking-widest font-semibold mb-6 text-yellow-400">Experience</h2>
+                    <div class="space-y-8">
+                        {% for job in resume.experience %}
+                        <div class="print-break-inside-avoid">
+                            <div class="flex justify-between items-baseline">
+                                <div>
+                                    <h3 class="font-semibold text-lg">{{ job.role }}</h3>
+                                    <p class="text-yellow-400">{{ job.company }}{% if job.location %} • {{ job.location }}{% endif %}</p>
+                                </div>
+                                <p class="text-sm text-slate-400 whitespace-nowrap">
+                                    {{ job.startDate }} — {{ "Present" if job.current else job.endDate }}
+                                </p>
+                            </div>
+                            {% if job.highlights %}
+                            <ul class="mt-3 text-slate-300 text-[14.8px] space-y-1.5 list-disc pl-5">
+                                {% for h in job.highlights %}
+                                <li>{{ h }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %} {% if job.techs %}
+                            <div class="italic text-xs mt-2 bg-gray-800 p-1">{{ job.techs | join(' · ') }}</div>
                             {% endif %}
                         </div>
-                        <p class="mt-1 text-slate-300">{{ p.description }}</p>
-                        {% if p.highlights %}
-                        <ul class="mt-3 text-slate-300 text-[14.8px] space-y-1.5 list-disc pl-5">
-                            {% for h in p.highlights %}
-                            <li>{{ h }}</li>
-                            {% endfor %}
-                        </ul>
-                        {% endif %}
-                        {% if p.tech %}
-                        <div class="mt-3 flex flex-wrap gap-2">
-                            {% for tech in p.tech %}
-                            <span class="text-xs bg-slate-900 px-3 py-1 rounded text-slate-400">{{ tech }}</span>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
+                        {% endfor %}
                     </div>
-                    {% endfor %}
-                </div>
-            </section>
-            {% endif %}
+                </section>
+                {% endif %}
 
+                <!-- Projects -->
+                {% if resume.projects %}
+                <section>
+                    <h2 class="uppercase text-xs tracking-widest font-semibold mb-6 text-yellow-400">Key Projects</h2>
+                    <div class="space-y-6">
+                        {% for p in resume.projects %}
+                        <div class="print-break-inside-avoid border-l-2 border-yellow-400 pl-5">
+                            <div class="flex justify-between">
+                                <h3 class="font-semibold">{{ p.name }}</h3>
+                                {% if p.link %}
+                                <a href="{{ p.link }}" class="text-yellow-400 text-sm hover:underline">View Project →</a>
+                                {% endif %}
+                            </div>
+                            <p class="mt-1 text-slate-300">{{ p.description }}</p>
+                            {% if p.highlights %}
+                            <ul class="mt-3 text-slate-300 text-[14.8px] space-y-1.5 list-disc pl-5">
+                                {% for h in p.highlights %}
+                                <li>{{ h }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %} {% if p.tech %}
+                            <div class="mt-3 flex flex-wrap gap-2">
+                                {% for tech in p.tech %}
+                                <span class="text-xs bg-slate-900 px-3 py-1 rounded text-slate-400">{{ tech }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+                {% endif %}
+            </div>
         </div>
-    </div>
-</body>
-
+    </body>
 </html>
