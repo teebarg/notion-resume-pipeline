@@ -14,14 +14,31 @@
                 -webkit-print-color-adjust: exact;
                 background-color: white !important;
             }
-
-            .print-break-inside-avoid {
-                page-break-inside: avoid;
-            }
         }
 
         .accent-yellow {
             color: #eab308;
+        }
+
+        .exp-highlights {
+            list-style: disc;
+            padding-left: 18px;
+            margin-top: 6px;
+        }
+
+        .exp-highlights li {
+            font-size: 15px;
+            color: #3a3a3a;
+            line-height: 1.5;
+            margin-bottom: 4px;
+        }
+
+        .section-header {
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 12px;
         }
     </style>
 </head>
@@ -31,7 +48,7 @@
     <div class="min-h-[1150px] grid grid-cols-12">
 
         <!-- LEFT SIDEBAR -->
-        <div class="col-span-4 bg-slate-950 text-white p-8 flex flex-col">
+        <div class="col-span-4 bg-slate-950 text-white py-8 px-4 flex flex-col">
 
             <!-- Header -->
             <div class="mb-10">
@@ -40,12 +57,12 @@
                     PRODUCT ENGINEER
                 </div>
                 <h1 class="text-4xl font-bold tracking-tight mt-6 leading-none">{{ resume.basics.name }}</h1>
-                <p class="text-xl text-yellow-400 mt-2">{{ resume.basics.title }}</p>
+                <p class="text-yellow-400 mt-2">{{ resume.basics.title }}</p>
             </div>
 
             <!-- Contact -->
             <div class="mb-8">
-                <h3 class="uppercase text-xs tracking-widest text-slate-400 mb-4 font-semibold">Contact</h3>
+                <h3 class="text-slate-400 mb-4 section-header">Contact</h3>
                 <div class="space-y-3 text-sm">
                     {% if resume.basics.email %}
                     <div class="flex items-center gap-3">
@@ -89,7 +106,7 @@
             <!-- Skills -->
             {% if resume.skills %}
             <div class="mb-8">
-                <h3 class="uppercase text-xs tracking-widest text-slate-400 mb-4 font-semibold">Expertise</h3>
+                <h3 class="text-slate-400 mb-4 section-header">Skills</h3>
                 <div class="space-y-5">
                     {% for s in resume.skills %}
                     <div>
@@ -108,13 +125,13 @@
             <!-- Education -->
             {% if resume.education %}
             <div>
-                <h3 class="uppercase text-xs tracking-widest text-slate-400 mb-4 font-semibold">Education</h3>
-                <div class="space-y-4 text-sm">
+                <h3 class="text-slate-400 mb-4 section-header">Education</h3>
+                <div class="space-y-4">
                     {% for e in resume.education %}
                     <div>
                         <p class="font-medium">{{ e.degree }}</p>
                         <p class="text-slate-400">{{ e.institution }}</p>
-                        <p class="text-xs text-slate-500">{{ e.startDate }} — {{ e.endDate }}</p>
+                        <p class="text-sm text-slate-500">{{ e.startDate }} — {{ e.endDate }}</p>
                     </div>
                     {% endfor %}
                 </div>
@@ -124,13 +141,13 @@
         </div>
 
         <!-- RIGHT MAIN CONTENT -->
-        <div class="col-span-8 bg-white p-10">
+        <div class="col-span-8 bg-white py-10 px-4">
 
             <!-- Summary -->
             {% if resume.basics.summary %}
             <section class="mb-10">
-                <h2 class="uppercase text-xs tracking-widest text-slate-500 mb-3">Profile</h2>
-                <p class="text-slate-600 leading-relaxed text-[15px]">
+                <h2 class="text-slate-700 section-header">Profile</h2>
+                <p class="text-slate-600 leading-relaxed text-[15px] italic">
                     {{ resume.basics.summary }}
                 </p>
             </section>
@@ -139,11 +156,11 @@
             <!-- Experience -->
             {% if resume.experience %}
             <section class="mb-10">
-                <h2 class="uppercase text-xs tracking-widest text-slate-500 mb-6">Work Experience</h2>
+                <h2 class="text-slate-700 section-header">Work Experience</h2>
                 <div
                     class="space-y-8 relative before:absolute before:left-2 before:top-2 before:bottom-2 before:w-px before:bg-slate-200">
                     {% for job in resume.experience %}
-                    <div class="print-break-inside-avoid relative pl-8">
+                    <div class="relative pl-8">
                         <!-- Timeline Dot -->
                         <div class="absolute left-0 w-5 h-5 rounded-full border-2 border-yellow-400 bg-white"></div>
 
@@ -174,11 +191,10 @@
             <!-- Projects -->
             {% if resume.projects %}
             <section>
-                <h2 class="uppercase text-xs tracking-widest text-slate-500 mb-6">Key Projects</h2>
-                <div class="grid grid-cols-1 gap-6">
+                <h2 class="text-slate-700 section-header">Projects</h2>
+                <div class="grid grid-cols-1 gap-2">
                     {% for p in resume.projects %}
-                    <div
-                        class="border border-slate-100 rounded-2xl p-6 hover:border-yellow-300 transition-colors print-break-inside-avoid">
+                    <div class="border border-slate-100 rounded-2xl px-6 hover:border-yellow-300 transition-colors">
                         <div class="flex justify-between items-start">
                             <h3 class="font-semibold">{{ p.name }}</h3>
                             {% if p.link %}
@@ -189,6 +205,13 @@
                             {% endif %}
                         </div>
                         <p class="mt-2 text-slate-600 text-[14.8px]">{{ p.description }}</p>
+                        {% if p.highlights %}
+                        <ul class="exp-highlights">
+                            {% for point in p.highlights %}
+                            <li>{{ point }}</li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
                         {% if p.tech %}
                         <div class="mt-4 flex flex-wrap gap-2">
                             {% for tech in p.tech %}

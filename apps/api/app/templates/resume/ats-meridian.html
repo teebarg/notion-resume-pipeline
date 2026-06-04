@@ -5,6 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{ resume.basics.name }} — Resume</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700;900&family=Barlow+Condensed:wght@700;900&display=swap');
 
@@ -25,7 +26,7 @@
 
         body {
             font-family: 'Barlow', Arial, sans-serif;
-            font-size: 13px;
+            font-size: 16px;
             color: var(--black);
             background: var(--white);
             max-width: 900px;
@@ -116,11 +117,16 @@
 
         /* Contact items */
         .contact-item {
-            font-size: 12px;
+            font-size: 13.5px;
             color: var(--muted);
             margin-bottom: 5px;
             line-height: 1.4;
             word-break: break-all;
+            margin-bottom: 10px;
+        }
+
+        .contact-item:last-child {
+            margin-bottom: 0;
         }
 
         .contact-item a {
@@ -128,35 +134,39 @@
             text-decoration: none;
         }
 
+        .contact-item i {
+            margin-right: 8px;
+        }
+
         /* Skills */
-        .skill-group {
-            margin-bottom: 14px;
+        .skills-entry {
+            margin-bottom: 20px;
         }
 
-        .skill-group-name {
-            font-size: 12px;
+        .skills-entry:last-child {
+            margin-bottom: 0;
+        }
+
+        .skill-name {
+            font-size: 15px;
             font-weight: 700;
-            color: var(--black);
-            margin-bottom: 5px;
+            color: #2e2e2e;
+            margin-bottom: 8px;
         }
 
-        .skill-bar-wrap {
-            background: #ddd;
-            height: 5px;
-            border-radius: 3px;
-            overflow: hidden;
+        .skills-badge {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
         }
 
-        .skill-bar {
-            height: 100%;
-            background: var(--black);
-            border-radius: 3px;
-        }
-
-        .skill-plain {
-            font-size: 12px;
-            color: var(--muted);
-            margin-bottom: 4px;
+        .badge {
+            background-color: #fff;
+            color: #3a3a3a;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12.5px;
+            font-weight: 600;
         }
 
         /* Education */
@@ -165,22 +175,20 @@
         }
 
         .edu-institution {
-            font-size: 12.5px;
             font-weight: 700;
             color: var(--black);
             text-transform: uppercase;
-            letter-spacing: 0.3px;
         }
 
         .edu-degree {
-            font-size: 12px;
+            font-size: 15px;
             color: var(--muted);
             margin-top: 2px;
             line-height: 1.4;
         }
 
         .edu-dates {
-            font-size: 11.5px;
+            font-size: 15px;
             color: #888;
             margin-top: 1px;
         }
@@ -211,48 +219,43 @@
 
         /* Profile */
         .profile-text {
-            font-size: 13px;
+            font-size: 15px;
             color: var(--muted);
-            line-height: 1.75;
+            line-height: 1.6;
         }
 
         /* Work experience */
-        .exp-entry {
-            display: grid;
-            grid-template-columns: 100px 1fr;
-            gap: 0 16px;
-            margin-bottom: 18px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .exp-entry:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-        }
-
-        .exp-left {
-            padding-top: 2px;
-        }
-
         .exp-dates {
-            font-size: 11.5px;
+            font-size: 12px;
             font-weight: 700;
             color: var(--black);
-            line-height: 1.3;
+            line-height: 1;
+        }
+
+        .exp-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
         }
 
         .exp-company {
-            font-size: 11.5px;
             color: #888;
-            margin-top: 2px;
+            margin-bottom: 6px;
         }
 
-        .exp-right .exp-role {
-            font-size: 13.5px;
+        .exp-entry {
+            margin-bottom: 18px;
+        }
+
+        .exp-entry:last-child {
+            margin-bottom: 0;
+        }
+
+        .exp-entry .exp-role {
             font-weight: 700;
             color: var(--black);
-            margin-bottom: 6px;
+            margin-bottom: 2px;
         }
 
         .exp-highlights {
@@ -261,11 +264,11 @@
         }
 
         .exp-highlights li {
-            font-size: 12px;
+            font-size: 15px;
             color: var(--muted);
             line-height: 1.6;
             margin-bottom: 3px;
-            padding-left: 10px;
+            padding-left: 14px;
             position: relative;
         }
 
@@ -279,7 +282,7 @@
 
         .exp-techs {
             margin-top: 6px;
-            font-size: 11px;
+            font-size: 12.5px;
             color: #999;
             font-style: italic;
         }
@@ -304,7 +307,6 @@
         }
 
         .project-name {
-            font-size: 13px;
             font-weight: 700;
             color: var(--black);
         }
@@ -320,7 +322,7 @@
         }
 
         .project-desc {
-            font-size: 12px;
+            font-size: 15px;
             color: var(--muted);
             line-height: 1.6;
             margin-bottom: 4px;
@@ -332,11 +334,11 @@
         }
 
         .project-highlights li {
-            font-size: 12px;
+            font-size: 15px;
             color: var(--muted);
             line-height: 1.6;
             margin-bottom: 3px;
-            padding-left: 10px;
+            padding-left: 14px;
             position: relative;
         }
 
@@ -412,62 +414,52 @@
         <aside class="sidebar">
 
             <!-- CONTACT -->
-            {% if resume.basics.phone or resume.basics.email or resume.basics.website or resume.basics.location or
-            resume.basics.linkedin or resume.basics.github %}
             <div class="sidebar-section">
                 <span class="sidebar-label">Contact</span>
                 <div class="sidebar-body">
-                    {% if resume.basics.phone %}
-                    <div class="contact-item">{{ resume.basics.phone }}</div>
-                    {% endif %}
-                    {% if resume.basics.website %}
-                    <div class="contact-item"><a href="{{ resume.basics.website }}">{{ resume.basics.website }}</a>
-                    </div>
-                    {% endif %}
                     {% if resume.basics.email %}
-                    <div class="contact-item"><a href="mailto:{{ resume.basics.email }}">{{ resume.basics.email }}</a>
+                    <div class="contact-item">
+                        <i class="fa-solid fa-envelope fa-xl"></i><a href="mailto:{{ resume.basics.email }}">{{
+                            resume.basics.email }}</a>
                     </div>
-                    {% endif %}
-                    {% if resume.basics.location %}
-                    <div class="contact-item">{{ resume.basics.location }}</div>
-                    {% endif %}
-                    {% if resume.basics.linkedin %}
-                    <div class="contact-item"><a href="{{ resume.basics.linkedin }}">{{ resume.basics.linkedin }}</a>
+                    {% endif %} {% if resume.basics.phone %}
+                    <div class="contact-item"><i class="fa-solid fa-phone fa-xl"></i>{{ resume.basics.phone }}</div>
+                    {% endif %} {% if resume.basics.website %}
+                    <div class="contact-item">
+                        <i class="fa-solid fa-globe fa-xl"></i><a href="{{ resume.basics.website }}">{{
+                            resume.basics.website }}</a>
                     </div>
-                    {% endif %}
-                    {% if resume.basics.github %}
-                    <div class="contact-item"><a href="{{ resume.basics.github }}">{{ resume.basics.github }}</a></div>
+                    {% endif %} {% if resume.basics.linkedin %}
+                    <div class="contact-item">
+                        <i class="fa-brands fa-linkedin fa-xl"></i><a href="{{ resume.basics.linkedin }}">{{
+                            resume.basics.linkedin }}</a>
+                    </div>
+                    {% endif %} {% if resume.basics.github %}
+                    <div class="contact-item">
+                        <i class="fa-brands fa-github fa-xl"></i><a href="{{ resume.basics.github }}">{{
+                            resume.basics.github }}</a>
+                    </div>
+                    {% endif %} {% if resume.basics.location %}
+                    <div class="contact-item"><i class="fa-solid fa-location-dot fa-xl"></i>{{ resume.basics.location }}
+                    </div>
                     {% endif %}
                 </div>
             </div>
-            {% endif %}
 
-            <!-- SKILLS -->
+            <!-- Skills -->
             {% if resume.skills %}
             <div class="sidebar-section">
                 <span class="sidebar-label">Skills</span>
                 <div class="sidebar-body">
-                    {% for skill in resume.skills %}
-                    {% if skill.stack %}
-                    {% if skill.name %}
-                    <div class="skill-group-name">{{ skill.name }}</div>
-                    {% endif %}
-                    {% for item in skill.stack %}
-                    <div class="skill-group">
-                        <div class="skill-plain">{{ item }}</div>
-                        <div class="skill-bar-wrap">
-                            <div class="skill-bar" style="width: 70%;"></div>
+                    {% for s in resume.skills %}
+                    <div class="skills-entry">
+                        <p class="skill-name">{{ s.name }}</p>
+                        <div class="skills-badge">
+                            {% for item in s.stack %}
+                            <span class="badge">{{ item }}</span>
+                            {% endfor %}
                         </div>
                     </div>
-                    {% endfor %}
-                    {% else %}
-                    <div class="skill-group">
-                        <div class="skill-plain">{{ skill.name }}</div>
-                        <div class="skill-bar-wrap">
-                            <div class="skill-bar" style="width: 70%;"></div>
-                        </div>
-                    </div>
-                    {% endif %}
                     {% endfor %}
                 </div>
             </div>
@@ -514,30 +506,33 @@
             <div class="main-body">
                 {% for exp in resume.experience %}
                 <div class="exp-entry">
-                    <div class="exp-left">
+                    <div class="exp-header">
+                        <div>
+                            <div class="exp-role">{{ exp.role }}{% if exp.location %} · {{ exp.location }}{% endif
+                                %}
+                            </div>
+                            {% if exp.company %}
+                            <div class="exp-company">{{ exp.company }}</div>
+                            {% endif %}
+                        </div>
                         {% if exp.startDate %}
                         <div class="exp-dates">
-                            {{ exp.startDate }}<br>{{ '—' }}<br>{% if exp.current %}Present{% else %}{{ exp.endDate }}{%
+                            {{ exp.startDate }}<br>{{ '—' }}<br>{% if exp.current %}Present{% else %}{{ exp.endDate
+                            }}{%
                             endif %}
                         </div>
                         {% endif %}
-                        {% if exp.company %}
-                        <div class="exp-company">{{ exp.company }}</div>
-                        {% endif %}
                     </div>
-                    <div class="exp-right">
-                        <div class="exp-role">{{ exp.role }}{% if exp.location %} · {{ exp.location }}{% endif %}</div>
-                        {% if exp.highlights %}
-                        <ul class="exp-highlights">
-                            {% for point in exp.highlights %}
-                            <li>{{ point }}</li>
-                            {% endfor %}
-                        </ul>
-                        {% endif %}
-                        {% if exp.techs %}
-                        <div class="exp-techs">{{ exp.techs | join(' · ') }}</div>
-                        {% endif %}
-                    </div>
+                    {% if exp.highlights %}
+                    <ul class="exp-highlights">
+                        {% for point in exp.highlights %}
+                        <li>{{ point }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    {% if exp.techs %}
+                    <div class="exp-techs">{{ exp.techs | join(' · ') }}</div>
+                    {% endif %}
                 </div>
                 {% endfor %}
             </div>

@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from jinja2 import Environment, FileSystemLoader, select_autoescape, TemplateNotFound
-from app.schemas.resume import ResumeData, Template, TemplateVariant, TemplateId
+from app.schemas.resume import Template, TemplateId
 
 class ResumeService:
     def __init__(self, templates_dir: Optional[Path] = None):
@@ -12,79 +12,42 @@ class ResumeService:
         )
 
         # Centralized Template Registry
-        # In a massive app, this could be loaded dynamically from YAML/JSON files in the template directories
         self._templates: Dict[TemplateId, Template] = {
             "enhance": Template(
                 id="enhance",
                 name="Enhance",
-                description="Clean and simple single-column layout focusing on typography.",
+                description="An elegant, polished layout designed to elevate standard resumes with enhanced visual hierarchy.",
                 preview="enhance.png"
-            ),
-             "ats-resume": Template(
-                id="ats-resume",
-                name="ATS Resume",
-                description="Clean and simple single-column layout focusing on typography.",
-                preview="ats-resume.png"
-            ),
-            "product-focused": Template(
-                id="product-focused",
-                name="Product Focused",
-                description="Clean and simple single-column layout focusing on typography.",
-                preview="product-focused.png"
-            ),
-            "engineer": Template(
-                id="engineer",
-                name="Engineer Resume",
-                description="Clean and simple single-column layout focusing on typography.",
-                preview="engineer.png"
-            ),
-            "meridian": Template(
-                id="meridian",
-                name="Meridian",
-                description="Clean and simple single-column layout focusing on typography.",
-                preview="meridian.png"
             ),
              "ats-meridian": Template(
                 id="ats-meridian",
                 name="ATS Meridian",
-                description="Clean and simple single-column layout focusing on typography.",
+                description="Strictly optimized for Applicant Tracking Systems with a clean, highly scannable single-column structure.",
                 preview="ats-meridian.png"
             ),
             "minimal": Template(
                 id="minimal",
                 name="Minimal",
-                description="Clean and simple single-column layout focusing on typography.",
+                description="A stripped-back, distraction-free single-column layout focusing purely on crisp typography and whitespace.",
                 preview="minimal.png"
             ),
             "modern": Template(
                 id="modern",
                 name="Modern",
-                description="Contemporary layout with subtle accents",
+                description="A contemporary, stylish layout with subtle accents and a fresh aesthetic for modern industries.",
                 preview="modern.png",
             ),
             "classic": Template(
                 id="classic",
                 name="Classic",
-                description="Traditional format preferred by recruiters",
+                description="The time-tested, traditional format preferred by conservative industries and executive recruiters.",
                 preview="classic.png",
-            ),
-            "developer-focus": Template(
-                id="developer-focus",
-                name="Developer Focus",
-                description="Technical focus with skills emphasis",
-                preview="developer-focus.png",
             ),
             "developer": Template(
                 id="developer",
                 name="Developer",
-                description="Technical focus with skills emphasis",
+                description="A technical, data-dense layout designed to prominently feature core skills, languages, and project repositories.",
                 preview="developer.png",
-            ),
-            "executive": Template(
-                id="executive",
-                name="Executive Briefing",
-                description="A premium, McKinsey-style layout engineered for senior leaders, emphasizing strategy, scale, and business outcomes.",
-                preview="executive.png"
             ),
             "modern-canva": Template(
                 id="modern-canva",
@@ -92,41 +55,6 @@ class ResumeService:
                 description="A premium, McKinsey-style layout engineered for senior leaders, emphasizing strategy, scale, and business outcomes.",
                 preview="modern-canva.png"
             ),
-             "bento-dark": Template(
-                id="bento-dark",
-                name="Bento Dark",
-                description="A premium, McKinsey-style layout engineered for senior leaders, emphasizing strategy, scale, and business outcomes.",
-                preview="bento-dark.png"
-            ),
-            "geometric-edge": Template(
-                id="geometric-edge",
-                name="Geometric Edge",
-                description="A premium, McKinsey-style layout engineered for senior leaders, emphasizing strategy, scale, and business outcomes.",
-                preview="geometric-edge.png"
-            ),
-            "split-onyx": Template(
-                id="split-onyx",
-                name="Split Onyx",
-                description="A premium, McKinsey-style layout engineered for senior leaders, emphasizing strategy, scale, and business outcomes.",
-                preview="split-onyx.png"
-            ),
-            "minimal-geometric-split": Template(
-                id="minimal-geometric-split",
-                name="Minimal Geometric Split",
-                description="A premium, McKinsey-style layout engineered for senior leaders, emphasizing strategy, scale, and business outcomes.",
-                preview="minimal-geometric-split.png"
-            ),
-            "modern-sidebar": Template(
-                id="modern-sidebar",
-                name="Modern Sidebar",
-                description="A sleek, asymmetric two-column design optimized for impact.",
-                preview="modern-sidebar.png",
-                has_sidebar=True,
-                variants=[
-                    TemplateVariant(id="classic-slate", name="Slate", primary_color="slate-900", text_color="slate-600"),
-                    TemplateVariant(id="emerald-pro", name="Emerald", primary_color="emerald-900", text_color="emerald-700")
-                ]
-            )
         }
 
     def list_templates(self) -> List[Template]:

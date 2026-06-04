@@ -133,7 +133,7 @@ export function Dashboard() {
                         <div className="w-7 h-7 rounded-md bg-primary/15 border border-primary/30 flex items-center justify-center shrink-0">
                             <FileText className="w-4 h-4 text-primary" />
                         </div>
-                        <span className="font-semibold tracking-tight truncate">résumé.dev</span>
+                        <span className="font-semibold tracking-tight truncate">{process.env.NEXT_PUBLIC_APP_NAME}</span>
                         <Badge variant="secondary" className="ml-1 font-mono text-[10px] py-0 hidden sm:inline-flex">
                             v1.4.0
                         </Badge>
