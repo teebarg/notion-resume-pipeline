@@ -8,6 +8,7 @@ from redis.asyncio import Redis
 from app.core.redis import get_redis
 from app.services.job_service import JobService
 from app.services.resume_service import ResumeService
+from app.services.share_service import ShareService
 
 def get_notion_client() -> NotionClient:
     return NotionClient()
@@ -27,3 +28,10 @@ async def get_job_service(
     redis: Redis = Depends(get_redis),
 ) -> AsyncGenerator[JobService, None]:
     yield JobService(redis)
+
+def get_share_service(
+    redis: Redis = Depends(get_redis),
+    notion_service: NotionService = Depends(get_notion_service),
+    resume_service: ResumeService = Depends(get_resume_service)
+) -> ShareService:
+    return ShareService(redis_client=redis, notion_service=notion_service, resume_service=resume_service)

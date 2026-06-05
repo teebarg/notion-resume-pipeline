@@ -1,9 +1,11 @@
-from app.core.deps import get_resume_service
-from app.schemas.notion import NotionImportResponse
-from fastapi import APIRouter, Depends
 from typing import List
+from fastapi import APIRouter, Depends, Request
 from app.schemas.resume import Template
 from app.services.resume_service import ResumeService
+from app.core.deps import get_share_service, get_resume_service
+from app.schemas.share import ShareSettings
+from app.services.share_service import ShareService
+from app.schemas.notion import NotionImportRequest, NotionImportResponse
 
 router = APIRouter()
 
@@ -27,3 +29,28 @@ async def get_sample_resume(
     """
     sample_resume =  resume_service.get_sample_resume()
     return NotionImportResponse(page_id="sample", message="Resume imported successfully from Notion", resume=sample_resume)
+
+
+@router.post("/activate", response_model=ShareSettings)
+async def activate_sharing(
+    request: Request,
+    body: NotionImportRequest,
+    share_service: ShareService = Depends(get_share_service)
+) -> ShareSettings:
+    """
+    Generates or activates a public shareable link for a specific Notion Page ID.
+    """
+    base_url = str(request.base_url) 
+    return await share_service.generate_share_link(page_id=body.page_id, base_url=base_url)
+
+
+@router.post("/revoke", response_model=ShareSettings)
+async def revoke_sharing(
+    body: NotionImportRequest,
+    share_service: ShareService = Depends(get_share_service)
+) -> ShareSettings:
+    """
+    Instantly deletes the public slug from Redis for this Notion Page ID, 
+    breaking the link.
+    """
+    return await share_service.revoke_share_link(page_id=body.page_id)
