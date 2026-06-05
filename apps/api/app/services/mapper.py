@@ -283,8 +283,12 @@ def _parse_skills(nodes: list[ContentNode]) -> list[str]:
             items = _flatten_bullet(node)
         else:
             items = _split_tech_stack(text=node.text)
-        current.stack = items
- 
+        if current is not None:
+            current.stack = items
+
+    if current is not None:
+        skills.append(current)
+
     return skills
  
  

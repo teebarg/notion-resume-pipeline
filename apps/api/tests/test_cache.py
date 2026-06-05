@@ -159,7 +159,7 @@ async def test_cache_hit_skips_handler(mock_get_client: MagicMock) -> None:
     result = await handler(body=body, request=req)
 
     assert handler_calls == 0
-    assert result.data == "cached"
+    assert result["data"] == "cached"
     assert len(redis.set_calls) == 0
 
 
@@ -195,7 +195,7 @@ async def test_force_refresh_bypasses_cache(mock_get_client: MagicMock) -> None:
 @patch("app.core.cache.get_client")
 async def test_redis_get_failure_falls_through_gracefully(mock_get_client: MagicMock) -> None:
     """Verifies infrastructure faults bypass cache lookups cleanly."""
-    class BrokenRedis:
+    class BrokenRedis(FakeRedis):
         async def get(self, key: str) -> None:
             raise ConnectionError("Redis cluster unreachable")
 
@@ -219,7 +219,7 @@ async def test_redis_get_failure_falls_through_gracefully(mock_get_client: Magic
 async def test_custom_key_builder(mock_get_client: MagicMock) -> None:
     redis = FakeRedis()
     mock_get_client.return_value = redis
-    redis.seed("custom:p6", {"page_id": "p6", "data": "custom-cached"})
+    redis.seed("test:handler:custom:p6", {"page_id": "p6", "data": "custom-cached"})
 
     @redis_cache(
         ttl=60,
@@ -231,4 +231,4 @@ async def test_custom_key_builder(mock_get_client: MagicMock) -> None:
         return DummyResponse(page_id=body.page_id, data="should-not-reach")
 
     result = await handler(body=DummyBody(page_id="p6"), request=_make_request())
-    assert result.data == "custom-cached"
+    assert result["data"] == "custom-cached"

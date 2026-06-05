@@ -6,7 +6,12 @@ Run: pytest apps/api/tests/test_notion_pipeline.py -v
 
 import pytest
 
-from app.services.mapper import map_to_resume, _split_company_role, _extract_dates, _extract_tech
+from app.services.mapper import (
+    map_to_resume,
+    _split_company_role,
+    _extract_dates,
+    _extract_tech_from_prefix,
+)
 from app.services.parser import parse_blocks, ContentNode
 
 
@@ -62,7 +67,6 @@ class TestParser:
             "children": [child],
         }
         nodes = parse_blocks([unsupported])
-        # Parent node created but empty; child recursed into
         assert any(n.text == "Some content" for n in nodes[0].children)
 
     def test_empty_blocks_list(self):
@@ -83,11 +87,12 @@ class TestMapper:
             make_block("heading_2", "Summary"),
             make_block("paragraph", "Experienced backend engineer."),
             make_block("heading_2", "Experience"),
-            make_block("heading_3", "Acme Corp — Senior Engineer"),
+            make_block("heading_3", "Senior Engineer — Acme Corp"),
             make_block("paragraph", "Jan 2020 – Dec 2023"),
             make_block("bulleted_list_item", "Led API redesign"),
             make_block("heading_2", "Skills"),
-            make_block("bulleted_list_item", "Python, FastAPI, PostgreSQL"),
+            make_block("heading_3", "Backend"),
+            make_block("paragraph", "Python, FastAPI, PostgreSQL"),
         ]
         nodes = self._make_nodes(blocks)
         resume = map_to_resume(nodes)
@@ -99,7 +104,8 @@ class TestMapper:
         assert resume.experience[0].role == "Senior Engineer"
         assert resume.experience[0].startDate == "Jan 2020"
         assert "Led API redesign" in resume.experience[0].highlights
-        assert "Python" in resume.skills
+        assert len(resume.skills) == 1
+        assert "Python" in resume.skills[0].stack
 
     def test_empty_page_returns_empty_resume(self):
         resume = map_to_resume([])
@@ -118,7 +124,8 @@ class TestMapper:
         blocks = [
             make_block("heading_2", "Projects"),
             make_block("heading_3", "My App"),
-            make_block("paragraph", "A cool app. Tech: React, Node.js"),
+            make_block("paragraph", "A cool app."),
+            make_block("paragraph", "Tech: React, Node.js"),
         ]
         nodes = self._make_nodes(blocks)
         resume = map_to_resume(nodes)
@@ -126,14 +133,48 @@ class TestMapper:
         assert resume.projects[0].name == "My App"
         assert "React" in resume.projects[0].tech
 
+    def test_name_from_page_meta(self):
+        page_meta = {
+            "properties": {
+                "Name": {
+                    "type": "title",
+                    "title": [{"plain_text": "Meta Name"}],
+                }
+            }
+        }
+        resume = map_to_resume([], page_meta=page_meta)
+        assert resume.basics.name == "Meta Name"
+
+    def test_contact_extracted_from_raw_blocks(self):
+        raw_blocks = [
+            {
+                "type": "paragraph",
+                "paragraph": {
+                    "rich_text": [
+                        {"plain_text": "✉️ ", "href": None},
+                        {"plain_text": "jane@example.com", "href": "mailto:jane@example.com"},
+                    ]
+                },
+            },
+            {
+                "type": "paragraph",
+                "paragraph": {
+                    "rich_text": [{"plain_text": "📍 Lagos, Nigeria", "href": None}]
+                },
+            },
+        ]
+        resume = map_to_resume([], raw_blocks=raw_blocks)
+        assert resume.basics.email == "jane@example.com"
+        assert resume.basics.location == "Lagos, Nigeria"
+
 
 # ---------------------------------------------------------------------------
 # Utility tests
 # ---------------------------------------------------------------------------
 
 class TestUtilities:
-    def test_split_em_dash(self):
-        company, role = _split_company_role("Google — Staff Engineer")
+    def test_split_em_dash_role_first(self):
+        company, role = _split_company_role("Staff Engineer — Google")
         assert company == "Google"
         assert role == "Staff Engineer"
 
@@ -158,10 +199,10 @@ class TestUtilities:
         assert end == "Present"
 
     def test_extract_tech_prefix(self):
-        tech = _extract_tech("Tech: React, Node.js, PostgreSQL")
+        tech = _extract_tech_from_prefix("Tech: React, Node.js, PostgreSQL")
         assert "React" in tech
         assert "Node.js" in tech
 
     def test_extract_tech_no_match(self):
-        tech = _extract_tech("Led a team of 5 engineers.")
+        tech = _extract_tech_from_prefix("Led a team of 5 engineers.")
         assert tech == []

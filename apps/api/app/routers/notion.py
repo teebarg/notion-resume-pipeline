@@ -141,14 +141,14 @@ async def get_notion_resume(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=str(exc))
         
     except NotionImportError as exc:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc))
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail=str(exc))
         
     except Exception as exc:
         logger.critical("Unhandled critical system failure during import: %s", exc, exc_info=True)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="An unexpected system error occurred.")
 
 
-@router.post("/sync", response_model=ResumeData)
+@router.post("/sync", response_model=NotionImportResponse)
 async def manual_on_demand_sync(
     body: NotionImportRequest,
     service: NotionService = Depends(get_notion_service)

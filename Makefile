@@ -41,12 +41,6 @@ web:
 api:
 	$(COMPOSE) up api
 
-renderer:
-	$(COMPOSE) up renderer
-
-redis:
-	$(COMPOSE) up redis
-
 # ----------------------------
 # Development (without full stack)
 # ----------------------------
@@ -57,15 +51,7 @@ dev-web:
 dev-api:
 	cd apps/api && uvicorn app.main:app --reload --port 8000
 
-dev-renderer:
-	cd services/renderer && node server.js
-
 dev:
-	npx concurrently --no-kill-others \
-		"cd apps/api && .venv\Scripts\python -m uvicorn app.main:app --reload --port 8000" \
-		"cd apps/web && npm run dev"
-
-dev2:
 	npx concurrently \
 		"cd apps/api && . .venv/bin/activate && python -m uvicorn app.main:app --reload --port 8000" \
 		"cd apps/web && npm run dev"
@@ -75,6 +61,10 @@ activate-env-windows:
 
 activate-env:
 	cd apps/api && source .venv/bin/activate
+
+
+test:
+	cd apps/api && pytest tests/ -v
 
 
 # Build
@@ -88,9 +78,6 @@ clean:
 	@echo "Cleaning Docker system..."
 	$(COMPOSE) down -v
 	docker system prune -f
-
-redis-cli:
-	docker exec -it notion-resume-pipeline-redis-1 redis-cli
 
 
 # Scripts
