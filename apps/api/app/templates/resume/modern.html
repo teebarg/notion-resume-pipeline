@@ -412,8 +412,8 @@
                         <li>{{ point }}</li>
                         {% endfor %}
                     </ul>
-                    {% endif %} {% if project.tech %}
-                    <div class="project-tech">Tech: {{ project.tech | join(', ') }}</div>
+                    {% endif %} {% if project.stack %}
+                    <div class="project-tech">Tech: {{ project.stack | join(', ') }}</div>
                     {% endif %} {% if project.link %}
                     <div class="project-link"><a href="{{ project.link }}">{{ project.link }}</a></div>
                     {% endif %}

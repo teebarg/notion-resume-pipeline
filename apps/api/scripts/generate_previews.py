@@ -81,13 +81,13 @@ MOCK_RESUME_DATA = {
         {
             "name": "Electric Vehicles",
             "description": "Full plug-in electric vehicles using cutting edge technology",
-            "tech": ["Python", "FastAPI", "Redis", "Docker", "PostgreSQL", "System Design"],
+            "stack": ["Python", "FastAPI", "Redis", "Docker", "PostgreSQL", "System Design"],
             "link": ""
         },
          {
             "name": "AI Sales & Lead Qualification Platform",
             "description": "AI-driven sales automation platform for customer engagement, lead qualification, and intelligent scoring. Integrated LLM APIs for lead classification and scoring. Built conversational workflows for automated customer interactions. Developed backend APIs and data processing pipelines for sales workflows. Implemented lead scoring and analytics systems. Designed extensible architecture for future AI workflow expansion.",
-            "tech": [],
+            "stack": [],
             "link": None
         }
     ],

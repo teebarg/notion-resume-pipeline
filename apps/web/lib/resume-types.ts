@@ -17,7 +17,7 @@ export interface Experience {
   endDate: string;
   current: boolean;
   highlights: string[];
-  techs: string[];
+  stack: string[];
 }
 
 
@@ -25,7 +25,7 @@ export interface Project {
   name: string;
   description: string;
   highlights: string[];
-  tech: string[];
+  stack: string[];
   link?: string | null;
 }
 

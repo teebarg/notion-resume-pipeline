@@ -549,9 +549,9 @@
                         {% for h in job.highlights %}<li>{{ h }}</li>{% endfor %}
                     </ul>
                     {% endif %}
-                    {% if job.techs %}
+                    {% if job.stack %}
                     <div class="exp-techs">
-                        {% for t in job.techs %}<span class="tag">{{ t }}</span>{% endfor %}
+                        {% for t in job.stack %}<span class="tag">{{ t }}</span>{% endfor %}
                     </div>
                     {% endif %}
                 </div>
@@ -591,9 +591,9 @@
                     {% for h in p.highlights %}<li>{{ h }}</li>{% endfor %}
                 </ul>
                 {% endif %}
-                {% if p.tech %}
+                {% if p.stack %}
                 <div class="exp-techs">
-                    {% for t in p.tech %}<span class="tag">{{ t }}</span>{% endfor %}
+                    {% for t in p.stack %}<span class="tag">{{ t }}</span>{% endfor %}
                 </div>
                 {% endif %}
             </div>

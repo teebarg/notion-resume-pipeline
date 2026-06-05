@@ -1,7 +1,8 @@
 from pathlib import Path
 from typing import List, Dict, Any, Optional
+from app.core.sample_data import get_mock_resume_data
 from jinja2 import Environment, FileSystemLoader, select_autoescape, TemplateNotFound
-from app.schemas.resume import Template, TemplateId
+from app.schemas.resume import ResumeData, Template, TemplateId
 
 class ResumeService:
     def __init__(self, templates_dir: Optional[Path] = None):
@@ -56,6 +57,13 @@ class ResumeService:
                 preview="modern-canva.png"
             ),
         }
+
+    def get_sample_resume(self) -> ResumeData:
+        """
+        Retrieves a default populated resume schema for client-side testing
+        and template configuration visual workflows.
+        """
+        return get_mock_resume_data()
 
     def list_templates(self) -> List[Template]:
         """Returns all available resume templates."""

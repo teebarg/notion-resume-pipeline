@@ -62,7 +62,7 @@ SECTION_MAP: dict[str, str] = {
 # ---------------------------------------------------------------------------
 # Public entry point
 # ---------------------------------------------------------------------------
-def map_to_resume(nodes: list[ContentNode], page_meta: dict[str, Any] | None = None, raw_blocks: list[dict[str, Any]] | None = None,) -> ResumeData:
+def map_to_resume(nodes: list[ContentNode], page_meta: dict[str, Any] | None = None, raw_blocks: list[dict[str, Any]] | None = None) -> ResumeData:
     basics = _extract_basics_from_meta(page_meta)
     sections = _segment_by_section(nodes)
     logger.debug(f"[map_to_resume sections]------------------------------------------: {json.dumps(sections, indent=2, default=str)}")
@@ -169,7 +169,7 @@ def _parse_experience(nodes: list[ContentNode]) -> list[Experience]:
 
         elif node.type == "quote":
             skills = _parse_bullet_skills(node.text)
-            current.techs.extend(skills)
+            current.stack.extend(skills)
  
     if current is not None:
         entries.append(current)
@@ -195,9 +195,9 @@ def _parse_projects(nodes: list[ContentNode]) -> list[Project]:
         elif node.type == "paragraph" and current is not None:
             if _is_tech_stack_line(node.text):
                 continue  # skip inline-code stack lines
-            tech = _extract_tech_from_prefix(node.text)
-            if tech:
-                current.tech.extend(tech)
+            stack = _extract_tech_from_prefix(node.text)
+            if stack:
+                current.stack.extend(stack)
             elif not current.description:
                 current.description = node.text
  

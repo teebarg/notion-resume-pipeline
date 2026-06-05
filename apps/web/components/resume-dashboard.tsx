@@ -9,10 +9,12 @@ import { toast } from "sonner";
 import { useTheme } from "next-themes";
 import { NotionImportDialog } from "./dashboard/notion-import-dialog";
 import { getPersistedResume, persistResume } from "@/lib/storage";
-import { ResumeData, ResumeResponse, TemplateId } from "@/lib/resume-types";
+import { ResumeData, ResumeResponse } from "@/lib/resume-types";
 import { ExportButton } from "./dashboard/export-button";
 import { Spinner } from "@/components/ui/spinner";
 import { SidebarContent } from "./dashboard/sidebar-content";
+import { About } from "./dashboard/about";
+import { EmptyPreview } from "./dashboard/zero-state";
 
 export function Dashboard() {
     const toastId = useRef<string | number | undefined>(undefined);
@@ -93,18 +95,30 @@ export function Dashboard() {
         }
     };
 
+    const handleLoadDemo = async () => {
+        setLoading(true);
+        toastId.current = toast.loading("Loading sample data...");
+        try {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/resumes/sample`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+            });
+
+            if (!res.ok) throw new Error("Failed to get sample data");
+            const data = await res.json();
+            persistResume(data);
+            setResume(data.resume)
+            setPageId(data.page_id)
+            toast.success("Done! Sample data loaded", { id: toastId.current });
+        } catch (error) {
+            toast.error("Failed! Try again later", { id: toastId.current });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="min-h-screen bg-background text-foreground">
-            <style>{`
-        @media print {
-          body * { visibility: hidden !important; }
-          #print-root, #print-root * { visibility: visible !important; }
-          #print-root { position: absolute; inset: 0; background: white; }
-          @page { size: A4; margin: 0; }
-        }
-      `}</style>
-
-            {/* Top bar */}
             <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-xl no-print">
                 <div className="flex items-center justify-between px-4 sm:px-6 h-14 gap-2">
                     <div className="flex items-center gap-2 min-w-0">
@@ -127,6 +141,7 @@ export function Dashboard() {
                                         setMobileNavOpen(false);
                                     }}
                                     onImportClick={handleImportClick}
+                                    onLoadDemo={handleLoadDemo}
                                 />
                             </SheetContent>
                         </Sheet>
@@ -144,11 +159,12 @@ export function Dashboard() {
                                 <Github className="w-4 h-4" /> <span className="hidden md:inline">Star</span>
                             </a>
                         </Button>
+                        <About />
                         <Button variant="ghost" size="icon" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} aria-label="Toggle theme">
                             {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                         </Button>
                         <div className="w-px h-6 bg-border mx-1 hidden sm:block" />
-                        {resume && (
+                        {resume && pageId !== "sample" && (
                             <Button onClick={handleDataSync} size="sm" disabled={isSyncing} className="gap-2">
                                 {isSyncing ? <Spinner className="h-4 w-4" /> : <CloudSync className="h-4 w-4" />}
                                 <span className="hidden xs:inline sm:inline">Update</span>
@@ -171,11 +187,11 @@ export function Dashboard() {
                             variantId={variantId}
                             onSelect={handleSelectedTemplate}
                             onImportClick={() => setImportOpen(true)}
+                            onLoadDemo={handleLoadDemo}
                         />
                     </ScrollArea>
                 </aside>
 
-                {/* Preview */}
                 <main className="bg-grid relative overflow-auto">
                     <div className="sticky top-0 z-10 flex items-center justify-between px-4 sm:px-6 py-3 bg-background/80 backdrop-blur-md border-b border-border no-print gap-2">
                         <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono min-w-0">
@@ -225,20 +241,8 @@ export function Dashboard() {
                                             className="w-[210mm] h-[237mm] block border-0 bg-white"
                                         />
                                     ) : (
-                                        <div className="w-[210mm] h-[237mm] flex flex-col items-center justify-center text-zinc-400 text-sm font-mono">
-                                            <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-                                                <svg className="h-8 w-8 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                    <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={1.5}
-                                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                                    />
-                                                </svg>
-                                            </div>
-                                            <h3 className="text-lg font-medium">No resume data yet</h3>
-                                            <p className="mt-1 text-sm text-muted-foreground">Import from Notion or load sample data to preview</p>
-                                        </div>
+                                        <EmptyPreview onImportClick={handleImportClick}
+                                            onLoadDemo={handleLoadDemo} />
                                     )}
                                     {pageId && loading && (
                                         <div className="absolute top-3 right-3 text-[10px] font-mono px-2 py-1 rounded bg-black/70 text-white">

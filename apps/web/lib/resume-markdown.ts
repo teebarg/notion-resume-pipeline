@@ -31,7 +31,7 @@ export function resumeToMarkdown(d: ResumeData): string {
             const head = p.link ? `### [${p.name}](${p.link})` : `### ${p.name}`;
             lines.push(head);
             lines.push(p.description);
-            if (p.tech.length) lines.push("", `\`${p.tech.join("` · `")}\``);
+            if (p.stack.length) lines.push("", `\`${p.stack.join("` · `")}\``);
             lines.push("");
         }
     }

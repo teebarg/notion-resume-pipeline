@@ -10,7 +10,7 @@ from app.services.notion_service import NotionService
 from app.exceptions.notion import NotionImportError, NotionPageNotFoundError, NotionUnauthorizedError
 from app.core.logging import get_logger
 from app.schemas.notion import NotionImportRequest, NotionImportResponse
-from app.schemas.resume import ResumeData, TemplateId
+from app.schemas.resume import TemplateId
 from app.services.resume_service import ResumeService
 from app.services.pdf_service import PDFService
 
@@ -72,7 +72,10 @@ async def preview_resume(
 ) -> HTMLResponse:
     """Re-fetches (from cache) and renders the resume as an HTML page."""
     try:
-        resume = await notion_service.get_cached_resume(page_id=page_id)
+        if page_id == "sample":
+            resume = resume_service.get_sample_resume()
+        else:
+            resume = await notion_service.get_cached_resume(page_id=page_id)
     except Exception as exc:
         logger.critical("Unhandled critical system failure during import: %s", exc, exc_info=True)
         return render_error_page(

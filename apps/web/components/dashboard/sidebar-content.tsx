@@ -1,13 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { FileDown, Moon, Sun, Sparkles, FileText, Settings2, Github, ZoomIn, ZoomOut, Menu, RotateCcw, CloudSync } from "lucide-react";
-import { toast } from "sonner";
-import { useTheme } from "next-themes";
-import { getPersistedResume, persistResume } from "@/lib/storage";
+import { Sparkles, Settings2, Wand2, Check } from "lucide-react";
 import { ResumeData, TemplateId } from "@/lib/resume-types";
 import { TemplateSelector } from "./template-selector";
 
@@ -23,9 +16,10 @@ interface SidebarContentProps {
     variantId: string;
     onSelect: (templateId: string, variantId?: string) => void;
     onImportClick: () => void;
+    onLoadDemo: () => void;
 }
 
-export function SidebarContent({ resume, templateId, variantId, onSelect, onImportClick }: SidebarContentProps) {
+export function SidebarContent({ resume, templateId, variantId, onSelect, onImportClick, onLoadDemo }: SidebarContentProps) {
     return (
         <div className="space-y-6">
             <div>
@@ -36,10 +30,37 @@ export function SidebarContent({ resume, templateId, variantId, onSelect, onImpo
                         <div className="text-xs text-muted-foreground">Sync from a Notion page</div>
                     </div>
                 </Button>
-                {resume && (
-                    <div className="mt-2 flex items-center gap-2 text-xs text-muted-foreground px-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-                        <span className="font-mono truncate">Loaded: {resume.basics.name}</span>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full justify-start gap-2 mt-2 border-dashed text-muted-foreground hover:text-foreground"
+                    onClick={onLoadDemo}
+                >
+                    <Wand2 className="w-3.5 h-3.5" />
+                    Try Demo Resume
+                </Button>
+                {resume ? (
+                    <div className="mt-3 rounded-md border border-border bg-card/60 px-3 py-2">
+                        <div className="flex items-center gap-2">
+                            <span className="relative flex w-2 h-2">
+                                <span className="absolute inset-0 rounded-full bg-emerald-500/60 animate-ping" />
+                                <span className="relative inline-block w-2 h-2 rounded-full bg-emerald-500" />
+                            </span>
+                            <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                                Loaded
+                            </span>
+                        </div>
+                        <div className="mt-1 text-sm font-medium truncate">{resume.basics.name}</div>
+                    </div>
+                ) : (
+                    <div className="mt-3 rounded-md border border-dashed border-border bg-card/30 px-3 py-2">
+                        <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-muted-foreground/40" />
+                            <span className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground">
+                                Idle
+                            </span>
+                        </div>
+                        <div className="mt-1 text-xs text-muted-foreground">No resume loaded yet</div>
                     </div>
                 )}
             </div>
@@ -59,13 +80,19 @@ export function SidebarContent({ resume, templateId, variantId, onSelect, onImpo
                         <Settings2 className="w-4 h-4" /> Edit content
                     </Button>
                 </div>
-            </div>
-
-            <div className="rounded-lg border border-border bg-card p-3">
-                <div className="text-xs font-medium mb-1">Pro tip</div>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                    Press <kbd className="px-1.5 py-0.5 bg-muted rounded font-mono text-[10px]">⌘P</kbd> anywhere to open the export dialog.
-                </p>
+                <div className="mt-3 rounded-md border border-border bg-card/40 px-3 py-2.5">
+                    <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground mb-2">
+                        Outputs
+                    </div>
+                    <ul className="grid grid-cols-2 gap-y-1 text-xs text-muted-foreground">
+                        {["PDF", "Markdown", "JSON", "Live Preview"].map((o) => (
+                            <li key={o} className="flex items-center gap-1.5">
+                                <Check className="w-3 h-3 text-emerald-500" />
+                                <span>{o}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             </div>
         </div>
     );

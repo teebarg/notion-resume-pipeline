@@ -530,8 +530,8 @@
                 {% endfor %}
             </ul>
             {% endif %}
-            {% if exp.techs %}
-            <div class="exp-techs">{{ exp.techs | join(' · ') }}</div>
+            {% if exp.stack %}
+            <div class="exp-techs">{{ exp.stack | join(' · ') }}</div>
             {% endif %}
         </div>
         {% endfor %}
@@ -606,8 +606,8 @@
                 {% endfor %}
             </ul>
             {% endif %}
-            {% if project.tech %}
-            <div class="project-tech">{{ project.tech | join(' · ') }}</div>
+            {% if project.stack %}
+            <div class="project-tech">{{ project.stack | join(' · ') }}</div>
             {% endif %}
         </div>
         {% endfor %}

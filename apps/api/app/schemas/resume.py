@@ -24,14 +24,14 @@ class Experience(BaseModel):
     endDate: str = ""
     current: bool = False
     highlights: list[str] = []
-    techs: list[str] = []
+    stack: list[str] = []
 
 
 class Project(BaseModel):
     name: str = ""
     description: str = ""
     highlights: list[str] = []
-    tech: list[str] = []
+    stack: list[str] = []
     link: str | None = None
 
 

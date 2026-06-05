@@ -131,7 +131,7 @@ class TestMapper:
         resume = map_to_resume(nodes)
         assert len(resume.projects) == 1
         assert resume.projects[0].name == "My App"
-        assert "React" in resume.projects[0].tech
+        assert "React" in resume.projects[0].stack
 
     def test_name_from_page_meta(self):
         page_meta = {
@@ -199,10 +199,10 @@ class TestUtilities:
         assert end == "Present"
 
     def test_extract_tech_prefix(self):
-        tech = _extract_tech_from_prefix("Tech: React, Node.js, PostgreSQL")
-        assert "React" in tech
-        assert "Node.js" in tech
+        stack = _extract_tech_from_prefix("Tech: React, Node.js, PostgreSQL")
+        assert "React" in stack
+        assert "Node.js" in stack
 
     def test_extract_tech_no_match(self):
-        tech = _extract_tech_from_prefix("Led a team of 5 engineers.")
-        assert tech == []
+        stack = _extract_tech_from_prefix("Led a team of 5 engineers.")
+        assert stack == []
