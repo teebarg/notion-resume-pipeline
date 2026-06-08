@@ -1,6 +1,7 @@
+import re
 from typing import Literal, List
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 TemplateId = Literal["enhance", "ats-meridian", "minimal", "modern", "classic", "developer", "modern-canva"]
 
@@ -66,3 +67,21 @@ class Template(BaseModel):
     preview: str
     has_sidebar: bool = False
     variants: List[TemplateVariant] = []
+
+
+class StoragePdfSyncRequest(BaseModel):
+    page_id: str
+    template: TemplateId = "minimal"
+    variant: str | None = None
+
+    @field_validator("page_id")
+    @classmethod
+    def normalize_page_id(cls, v: str) -> str:
+        """Accept full Notion URLs or bare page IDs."""
+        # Strip URL if passed: https://www.notion.so/Title-<id> or /<id>
+        match = re.search(r"([a-f0-9]{32}|[a-f0-9-]{36})$", v.strip().rstrip("/"))
+        if match:
+            raw = match.group(1).replace("-", "")
+            # Re-format as UUID
+            return f"{raw[:8]}-{raw[8:12]}-{raw[12:16]}-{raw[16:20]}-{raw[20:]}"
+        return v

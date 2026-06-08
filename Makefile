@@ -80,6 +80,14 @@ clean:
 	docker system prune -f
 
 
+# Model Context
+fctx:
+	@cd apps/web && npx repomix
+
+bctx:
+	@cd apps/api && npx repomix
+
+
 # Scripts
 previews:
 	@echo "Re-generating template asset blueprints..."

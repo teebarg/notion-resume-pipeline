@@ -1,8 +1,9 @@
 from typing import List
 from fastapi import APIRouter, Depends, Request
-from app.schemas.resume import Template
+from app.schemas.resume import StoragePdfSyncRequest, Template
+from app.services.pdf_service import PDFService
 from app.services.resume_service import ResumeService
-from app.core.deps import get_share_service, get_resume_service
+from app.core.deps import get_pdf_service, get_share_service, get_resume_service
 from app.schemas.share import ShareSettings
 from app.services.share_service import ShareService
 from app.schemas.notion import NotionImportRequest, NotionImportResponse
@@ -54,3 +55,13 @@ async def revoke_sharing(
     breaking the link.
     """
     return await share_service.revoke_share_link(page_id=body.page_id)
+
+
+@router.post("/sync-pdf")
+async def update_storage_pdf(
+    body: StoragePdfSyncRequest,
+    pdf_service: PDFService = Depends(get_pdf_service)
+):
+    new_public_url = await pdf_service.sync_pdf_pipeline(body.page_id, body.template, body.variant)
+    
+    return {"status": "updated", "public_pdf_url": new_public_url}

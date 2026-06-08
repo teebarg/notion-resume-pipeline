@@ -28,7 +28,6 @@ class Settings(BaseSettings):
     app_env: Literal["development", "staging", "production"] = "development"
     app_name: str = "notion-resume-api"
     debug: bool = False
-    log_level: str = "INFO"
 
     host: str = "0.0.0.0"
     port: int = 8000
@@ -59,6 +58,10 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.app_env == "production"
+
+    SUPABASE_URL: str = ""
+    SUPABASE_SERVICE_ROLE_KEY: str = ""  # Use service_role for secure backend bypass of RLS
+    SUPABASE_BUCKET_NAME: str = "resumes"
 
 
 @lru_cache

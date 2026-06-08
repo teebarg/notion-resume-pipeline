@@ -1,6 +1,7 @@
 import asyncio
 from app.services.notion_service import NotionService
 from app.core.logging import get_logger
+from app.services.storage_service import StorageService
 from playwright.sync_api import sync_playwright
 from playwright.async_api import async_playwright
 from app.schemas.resume import TemplateId
@@ -9,9 +10,10 @@ from app.services.resume_service import ResumeService
 logger = get_logger(__name__)
 
 class PDFService:
-    def __init__(self, resume_service: ResumeService, notion_service: NotionService):
+    def __init__(self, resume_service: ResumeService, notion_service: NotionService, storage_service: StorageService):
         self.resume_service = resume_service
         self.notion_service = notion_service
+        self.storage_service = storage_service
 
     def _html_to_pdf_sync(self, html: str) -> bytes:
         with sync_playwright() as p:
@@ -45,3 +47,13 @@ class PDFService:
         )
         pdf_bytes = await self._html_to_pdf(html)
         return pdf_bytes
+
+    async def sync_pdf_pipeline(self, page_id: str, template: TemplateId = "minimal", variant: str | None = None) -> str:
+        """
+        Renders the PDF using latest configurations, forces update to Supabase, 
+        and returns the synchronized URL.
+        """
+        pdf_bytes = await self.generate_resume_pdf(page_id, template, variant)
+        
+        public_url = await self.storage_service.upload_resume_pdf(page_id, pdf_bytes)
+        return public_url
