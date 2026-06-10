@@ -200,6 +200,9 @@ def _parse_projects(nodes: list[ContentNode]) -> list[Project]:
                 current.stack.extend(stack)
             elif not current.description:
                 current.description = node.text
+
+        elif node.type == "quote" and current is not None:
+            current.link = node.text
  
         elif node.type in ("bullet", "sub_bullet") and current is not None:
             current.highlights.append(node.text)
