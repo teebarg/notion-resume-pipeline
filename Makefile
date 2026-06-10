@@ -1,111 +1,124 @@
-COMPOSE=docker compose
+# Variables
+COMPOSE := docker compose
+DOCKER_USER := beafdocker
+
+API_BASE := $(DOCKER_USER)/notion-api-base
+API_IMAGE := $(DOCKER_USER)/notion-api
+WEB_IMAGE := $(DOCKER_USER)/notion-web
+
+VERSION ?= latest
+GIT_SHA := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+
+.PHONY: dev-web dev-api shell-dev fctx bctx previews help \
+        dev dev-build restart stop logs api-logs web-logs \
+        shell-api shell-web test build-base build-api push-api release clean
 
 # ----------------------------
-# Setup
-# ----------------------------
-
-setup:
-	@echo "Installing root dependencies..."
-	npm install
-
-	@echo "Setting up environment..."
-	cp .env.example .env || true
-
-
-# Docker
-up:
-	@echo "Starting all services..."
-	$(COMPOSE) up --build
-
-down:
-	@echo "Stopping all services..."
-	$(COMPOSE) down
-
-restart:
-	@echo "Restarting services..."
-	$(COMPOSE) down && $(COMPOSE) up --build
-
-logs:
-	$(COMPOSE) logs -f
-
-ps:
-	$(COMPOSE) ps
-
-# ----------------------------
-# Service-specific access
-# ----------------------------
-
-web:
-	$(COMPOSE) up web
-
-api:
-	$(COMPOSE) up api
-
-# ----------------------------
-# Development (without full stack)
+# Development (shell)
 # ----------------------------
 
 dev-web:
 	cd apps/web && npm run dev
 
 dev-api:
-	cd apps/api && uvicorn app.main:app --reload --port 8000
+	cd apps/api && .venv/bin/uvicorn app.main:app --reload --port 8000
 
-dev:
+shell-dev:
 	npx concurrently \
-		"cd apps/api && . .venv/bin/activate && python -m uvicorn app.main:app --reload --port 8000" \
+		"cd apps/api && .venv/bin/uvicorn app.main:app --reload --port 8000" \
 		"cd apps/web && npm run dev"
 
-activate-env-windows:
-	cd apps/api && .venv\Scripts\Activate.ps1
+# ----------------------------
+# Context for AI
+# ----------------------------
+fctx:
+	cd apps/web && npx repomix
 
-activate-env:
-	cd apps/api && source .venv/bin/activate
+bctx:
+	cd apps/api && npx repomix
+
+# ----------------------------
+# Scripts
+# ----------------------------
+previews:
+	@echo "Re-generating template asset blueprints..."
+	cd apps/api && .venv/bin/python scripts/generate_previews.py $(if $(TEMPLATE),--template $(TEMPLATE))
 
 
+# -------------------------
+# DEV / DOCKER COMPOSE
+# -------------------------
+dev:
+	$(COMPOSE) up
+
+dev-build:
+	$(COMPOSE) up --build
+
+restart:
+	@echo "Restarting services..."
+	$(COMPOSE) down && $(COMPOSE) up --build
+
+stop:
+	$(COMPOSE) down
+
+logs:
+	$(COMPOSE) logs -f
+
+api-logs:
+	$(COMPOSE) logs -f api
+
+web-logs:
+	$(COMPOSE) logs -f web
+
+# -------------------------
+# SHELL ACCESS
+# -------------------------
+shell-api:
+	$(COMPOSE) exec api bash
+
+shell-web:
+	$(COMPOSE) exec web sh
+
+# -------------------------
+# TEST
+# -------------------------
 test:
-	cd apps/api && pytest tests/ -v
+	$(COMPOSE) exec api pytest
 
+# -------------------------
+# BUILD (VERSIONED)
+# -------------------------
+build-base:
+	docker build \
+		-f infra/docker/base.api.Dockerfile \
+		-t $(API_BASE):latest \
+		.
 
-# Build
-build:
-	$(COMPOSE) build
+build-api:
+	docker build \
+		-f infra/docker/api.Dockerfile \
+		-t $(API_IMAGE):latest \
+		-t $(API_IMAGE):$(VERSION) \
+		-t $(API_IMAGE):$(GIT_SHA) \
+		.
 
-rebuild:
-	$(COMPOSE) build --no-cache
+# -------------------------
+# PUSH
+# -------------------------
+push-api:
+	docker push $(API_IMAGE):latest
+	docker push $(API_IMAGE):$(VERSION)
+	docker push $(API_IMAGE):$(GIT_SHA)
 
+# -------------------------
+# RELEASE
+# -------------------------
+release: build-base build-api push-api
+
+# -------------------------
+# CLEAN
+# -------------------------
 clean:
 	@echo "Cleaning Docker system..."
 	$(COMPOSE) down -v
 	docker system prune -f
-
-
-# Model Context
-fctx:
-	@cd apps/web && npx repomix
-
-bctx:
-	@cd apps/api && npx repomix
-
-
-# Scripts
-previews:
-	@echo "Re-generating template asset blueprints..."
-	cd apps/api && python scripts/generate_previews.py $(if $(TEMPLATE),--template $(TEMPLATE))
-
-
-health:
-	curl http://localhost:3000 || true
-	curl http://localhost:8000/docs || true
-
-help:
-	@echo ""
-	@echo "Available commands:"
-	@echo "  make up           - start full system"
-	@echo "  make down         - stop system"
-	@echo "  make restart      - rebuild and restart"
-	@echo "  make logs         - view logs"
-	@echo "  make dev-web      - run frontend only"
-	@echo "  make dev-api      - run backend only"
-	@echo "  make clean        - cleanup docker system"
-	@echo ""

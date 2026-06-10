@@ -1,8 +1,8 @@
 services:
   web:
     build:
-      context: ./apps/web
-      dockerfile: ../../infra/docker/web.Dockerfile
+      context: .
+      dockerfile: infra/docker/web.Dockerfile
     volumes:
       - ./apps/web:/app
       - /app/node_modules             # anonymous volume so container's node_modules win
@@ -10,21 +10,26 @@ services:
       - NODE_ENV=development
     env_file:
       - ./apps/web/.env
+    ports:
+      - "40000:3000"
     networks:
       - dev-net
     labels:
       - traefik.enable=true
       - traefik.http.routers.cv.rule=Host(`cv.localhost`)
+      - traefik.http.routers.cv.entrypoints=web
       - traefik.http.services.cv.loadbalancer.server.port=3000
 
   api:
     build:
-      context: ./apps/api
-      dockerfile: ../../infra/docker/api.dev.Dockerfile
+      context: .
+      dockerfile: infra/docker/api.dev.Dockerfile
     platform: linux/amd64 # Patch for M1 Mac
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
     env_file:
       - ./apps/api/.env
+    ports:
+      - "40001:8000"
     networks:
       - dev-net
     volumes:

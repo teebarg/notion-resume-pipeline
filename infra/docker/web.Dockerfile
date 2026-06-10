@@ -1,15 +1,16 @@
-FROM node:20-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
 # Install pnpm
 RUN corepack enable
 
-COPY package.json pnpm-lock.yaml ./
+COPY apps/web/package.json apps/web/pnpm-lock.yaml ./
 
 RUN pnpm install
 
+COPY apps/web .
+
 EXPOSE 3000
 
-# Don't copy source — mount it as a volume instead
 CMD ["pnpm", "dev"]

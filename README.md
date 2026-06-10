@@ -88,9 +88,6 @@ Services are routed via Traefik:
 ### Local development (without full Docker stack)
 
 ```bash
-# Root setup
-make setup
-
 # Terminal 1 — API
 make dev-api
 # or: cd apps/api && uvicorn app.main:app --reload --port 8000
