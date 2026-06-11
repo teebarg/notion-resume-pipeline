@@ -1,8 +1,31 @@
-__pycache__
-*.pyc
-.venv
-.env
-node_modules
 dist
 build
-.git
+
+.next
+out
+Dockerfile*
+docker-compose*
+
+# Node/Next.js ignore targets
+node_modules/
+apps/web/.next/
+apps/web/.pnpm-store
+apps/web/node_modules/
+.next_cache/
+
+# Python/uv/FastAPI ignore targets
+.venv/
+apps/api/.venv/
+apps/api/.uv/
+apps/api/__pycache__
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment & Metadata keys
+.git/
+.gitignore
+.env*
+README.md
+Makefile

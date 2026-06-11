@@ -54,6 +54,9 @@ dev:
 dev-build:
 	$(COMPOSE) up --build
 
+prod-test:
+	$(COMPOSE) --profile test up --build
+
 restart:
 	@echo "Restarting services..."
 	$(COMPOSE) down && $(COMPOSE) up --build
@@ -89,13 +92,13 @@ test:
 # BUILD (VERSIONED)
 # -------------------------
 build-base:
-	docker build \
+	docker build --platform=linux/amd64 \
 		-f infra/docker/base.api.Dockerfile \
 		-t $(API_BASE):latest \
 		.
 
 build-api:
-	docker build \
+	docker build --platform=linux/amd64 \
 		-f infra/docker/api.Dockerfile \
 		-t $(API_IMAGE):latest \
 		-t $(API_IMAGE):$(VERSION) \

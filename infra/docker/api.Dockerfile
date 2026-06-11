@@ -57,23 +57,79 @@
 # syntax=docker/dockerfile:1.7
 
 # FROM base AS deps
-FROM beafdocker/notion-api-base:latest
+# FROM beafdocker/notion-api-base:latest
 
-COPY apps/api/pyproject.toml apps/api/uv.lock ./
+# COPY apps/api/pyproject.toml apps/api/uv.lock ./
 
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --frozen --no-install-project
+# RUN --mount=type=cache,target=/root/.cache/uv \
+#     uv sync --frozen --no-install-project
 
 
-FROM base AS runtime
+# FROM base AS runtime
 
-COPY --from=deps /app/.venv /app/.venv
-ENV PATH="/app/.venv/bin:$PATH"
+# COPY --from=deps /app/.venv /app/.venv
+# ENV PATH="/app/.venv/bin:$PATH"
+
+# WORKDIR /app
+
+# COPY apps/api .
+
+# EXPOSE 8000
+
+# CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+
+# ==============================================================================
+# STAGE 1: The Builder (Compiles dependencies safely)
+# ==============================================================================
+FROM beafdocker/notion-api-base:latest AS builder
 
 WORKDIR /app
 
-COPY apps/api .
+ENV UV_CACHE_DIR=/root/.cache/uv
+
+# Install uv using the official standalone script
+ADD https://astral.sh/uv/install.sh /uv-installer.sh
+RUN sh /uv-installer.sh && rm /uv-installer.sh
+ENV PATH="/root/.local/bin/:${PATH}"
+
+COPY apps/api/pyproject.toml apps/api/uv.lock* ./
+
+# Sync dependencies into a self-contained virtual environment.
+# We pass --no-dev to strip out any testing or linting utilities.
+RUN uv sync --frozen --no-dev --no-install-project
+
+# ==============================================================================
+# STAGE 2: The Runtime (Ultra-lean, secure, non-root)
+# ==============================================================================
+FROM beafdocker/notion-api-base:latest AS runner
+
+WORKDIR /app
+
+# Production optimization flags
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV ENV=production
+# Force python to favor our isolated virtual env binaries
+ENV PATH="/app/.venv/bin:$PATH"
+
+# 1. Create a dedicated, non-privileged system user for execution
+RUN addgroup --system fastapi && \
+    adduser --system --ingroup fastapi appuser
+
+# 2. Copy the compiled virtual environment from the builder stage
+COPY --from=builder /app/.venv /app/.venv
+
+# 3. Copy only the production application code
+COPY ./apps/api/app /app/app
+
+# 4. Set secure permissions so the non-root user owns the workspace
+RUN chown -R appuser:fastapi /app
+
+# Drop root privileges completely
+USER appuser
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# 5. Run with optimal production workers, NO reload flag, and direct gunicorn/uvicorn workers
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

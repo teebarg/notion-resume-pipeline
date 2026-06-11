@@ -3,9 +3,12 @@ services:
     build:
       context: .
       dockerfile: infra/docker/web.Dockerfile
+    container_name: resume_pipeline_web
     volumes:
-      - ./apps/web:/app
-      - /app/node_modules             # anonymous volume so container's node_modules win
+      - .:/app
+      - /app/node_modules
+      - /app/apps/web/node_modules
+      - /app/apps/web/.next
     environment:
       - NODE_ENV=development
     env_file:
@@ -19,13 +22,16 @@ services:
       - traefik.http.routers.cv.rule=Host(`cv.localhost`)
       - traefik.http.routers.cv.entrypoints=web
       - traefik.http.services.cv.loadbalancer.server.port=3000
+    depends_on:
+      api:
+        condition: service_healthy
 
   api:
     build:
       context: .
       dockerfile: infra/docker/api.dev.Dockerfile
+    container_name: resume_pipeline_api
     platform: linux/amd64 # Patch for M1 Mac
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
     env_file:
       - ./apps/api/.env
     ports:
@@ -34,18 +40,37 @@ services:
       - dev-net
     volumes:
       - ./apps/api/:/app
-      - /app/.venv
+      - /app/.venv/
+      - uv-cache:/root/.cache/uv
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 3
     labels:
       - traefik.enable=true
-      - traefik.http.routers.cv-api.rule=Host(`cv-api.localhost`)
+      - traefik.http.routers.cv-api.rule=Host(`cva.localhost`)
       - traefik.http.routers.cv-api.entrypoints=web
       - traefik.http.services.cv-api.loadbalancer.server.port=8000
+
+  api-prod-test:
+    profiles:
+      - test # This hides the service from standard "docker compose up" commands
+    build:
+      context: .
+      dockerfile: infra/docker/api.Dockerfile
+    container_name: resume_pipeline_api_prod
+    ports:
+      - "40003:8000"
+    environment:
+      - ENV=production
+      - REDIS_URL=redis://redis:6379/0
+    networks:
+      - dev-net
 
 networks:
   dev-net:
     external: true
+
+volumes:
+  uv-cache:

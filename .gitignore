@@ -1,7 +1,64 @@
-# Common ignores
-node_modules
-.next/
+# ==============================================================================
+# System & IDE Artifacts
+# ==============================================================================
 .DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ==============================================================================
+# Docker & Local Caches
+# ==============================================================================
+.next_cache/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.uv/
+
+# ==============================================================================
+# Environment Variables & Secrets (NEVER COMMIT THESE)
+# ==============================================================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env.*
+!.env.example
+
+# ==============================================================================
+# Frontend Workspace (apps/web)
+# ==============================================================================
+node_modules/
+apps/web/node_modules/
+apps/web/.next/
+apps/web/out/
+apps/web/build/
+apps/web/.pnpm-debug.log*
+apps/web/.pnpm-store
+
+# ==============================================================================
+# Backend Workspace (apps/api)
+# ==============================================================================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+apps/api/__pycache__/
+apps/api/.venv/
+.venv/
+apps/api/dist/
+apps/api/build/
+apps/api/*.egg-info/
+
+# ==============================================================================
+# Playwright & Testing Artifacts
+# ==============================================================================
+apps/api/test-results/
+apps/api/playwright-report/
+apps/api/blob-report/
 
 backend-context.md
 frontend-context.md
