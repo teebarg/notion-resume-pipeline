@@ -43,7 +43,7 @@ build-no-cache:
 
 .PHONY: up
 up:
-	$(COMPOSE) -p $(PROJECT_SLUG) up --build
+	$(COMPOSE) -p $(PROJECT_SLUG) up
 
 .PHONY: update
 update:
@@ -112,7 +112,7 @@ build-api:
 		-t $(API_IMAGE):$(VERSION) \
 		-t $(API_IMAGE):$(GIT_SHA) \
 		.
-		
+
 push-api:
 	docker push $(API_IMAGE):latest
 	docker push $(API_IMAGE):$(VERSION)
