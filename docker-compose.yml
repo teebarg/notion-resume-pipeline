@@ -1,14 +1,13 @@
 services:
   web:
     build:
-      context: .
-      dockerfile: infra/docker/web.Dockerfile
+      context: ./apps/web
+      dockerfile: Dockerfile
     container_name: resume_pipeline_web
     volumes:
-      - .:/app
+      - ./apps/web/:/app
       - /app/node_modules
-      - /app/apps/web/node_modules
-      - /app/apps/web/.next
+      - app-node-modules:/app/node_modules
     environment:
       - NODE_ENV=development
     env_file:
@@ -32,8 +31,8 @@ services:
 
   api:
     build:
-      context: .
-      dockerfile: infra/docker/api.dev.Dockerfile
+      context: ./apps/api
+      dockerfile: dev.Dockerfile
     container_name: resume_pipeline_api
     platform: linux/amd64 # Patch for M1 Mac
     env_file:
@@ -48,7 +47,7 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s
       timeout: 5s
-      retries: 3
+      retries: 30
     labels:
       - traefik.enable=true
       - traefik.docker.network=dev-net
@@ -65,8 +64,8 @@ services:
     profiles:
       - test # This hides the service from standard "docker compose up" commands
     build:
-      context: .
-      dockerfile: infra/docker/api.Dockerfile
+      context: ./apps/api
+      dockerfile: Dockerfile
     container_name: resume_pipeline_api_prod
     ports:
       - "40003:8000"
@@ -81,4 +80,5 @@ networks:
     external: true
 
 volumes:
+  app-node-modules:
   uv-cache:

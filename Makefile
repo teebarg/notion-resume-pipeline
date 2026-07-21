@@ -1,41 +1,26 @@
-# Variables
+PROJECT_SLUG = resume-pipeline
+DOCKER_HUB := beafdocker
 COMPOSE := docker compose
-DOCKER_USER := beafdocker
 
-API_BASE := $(DOCKER_USER)/notion-api-base
-API_IMAGE := $(DOCKER_USER)/notion-api
-WEB_IMAGE := $(DOCKER_USER)/notion-web
+API_BASE := $(DOCKER_HUB)/notion-api-base
+API_IMAGE := $(DOCKER_HUB)/notion-api
 
 VERSION ?= latest
 GIT_SHA := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 
-.PHONY: dev-web dev-api shell-dev fctx bctx previews help \
-        dev dev-build restart stop logs api-logs web-logs \
-        shell-api shell-web test build-base build-api push-api release clean
+.PHONY: previews build-base build-api push-api release
 
 # ----------------------------
-# Development (shell)
+# Repomix Source Context for AI
 # ----------------------------
-
-dev-web:
-	cd apps/web && npm run dev
-
-dev-api:
-	cd apps/api && .venv/bin/uvicorn app.main:app --reload --port 8000
-
-shell-dev:
-	npx concurrently \
-		"cd apps/api && .venv/bin/uvicorn app.main:app --reload --port 8000" \
-		"cd apps/web && npm run dev"
-
-# ----------------------------
-# Context for AI
-# ----------------------------
+.PHONY: fctx bctx ctx-all
 fctx:
-	cd apps/web && npx repomix
+	@cd apps/web && npx repomix
 
 bctx:
-	cd apps/api && npx repomix
+	@cd apps/api && npx repomix
+
+ctx-all: fctx bctx
 
 # ----------------------------
 # Scripts
@@ -48,66 +33,86 @@ previews:
 # -------------------------
 # DEV / DOCKER COMPOSE
 # -------------------------
-dev:
-	$(COMPOSE) up
+.PHONY: build
+build:
+	$(COMPOSE) -p $(PROJECT_SLUG) build
 
-dev-build:
-	$(COMPOSE) up --build
+.PHONY: build-no-cache
+build-no-cache:
+	$(COMPOSE) -p $(PROJECT_SLUG) build --no-cache
 
+.PHONY: up
+up:
+	$(COMPOSE) -p $(PROJECT_SLUG) up --build
+
+.PHONY: update
+update:
+	$(COMPOSE) -p $(PROJECT_SLUG) up -d --force-recreate $(s)
+
+.PHONY: update-all
+update-all:
+	$(COMPOSE) -p $(PROJECT_SLUG) up -d --force-recreate
+
+.PHONY: prod-test
 prod-test:
-	$(COMPOSE) --profile test up --build
+	$(COMPOSE) -p $(PROJECT_SLUG) --profile test up --build
 
-restart:
-	@echo "Restarting services..."
-	$(COMPOSE) down && $(COMPOSE) up --build
-
+.PHONY: stop
 stop:
-	$(COMPOSE) down
+	$(COMPOSE) -p $(PROJECT_SLUG) down
 
+# ==========================================
+# Debugging
+# ==========================================
+.PHONY: logs
 logs:
-	$(COMPOSE) logs -f
+	$(COMPOSE) -p $(PROJECT_SLUG) logs -f $(s)
 
-api-logs:
-	$(COMPOSE) logs -f api
-
-web-logs:
-	$(COMPOSE) logs -f web
-
-# -------------------------
-# SHELL ACCESS
-# -------------------------
-shell-api:
-	$(COMPOSE) exec api bash
-
+.PHONY: shell-web
 shell-web:
-	$(COMPOSE) exec web sh
+	$(COMPOSE) -p $(PROJECT_SLUG) exec web sh
 
-# -------------------------
-# TEST
-# -------------------------
-test:
-	$(COMPOSE) exec api pytest
+.PHONY: shell-api
+shell-api:
+	$(COMPOSE) -p $(PROJECT_SLUG) exec api /bin/bash
+
+.PHONY: install
+install:
+	$(COMPOSE) -p $(PROJECT_SLUG) exec api uv pip install $(package)
+
+.PHONY: prep
+prep:
+	$(COMPOSE) -p $(PROJECT_SLUG) exec api ./scripts/prestart.sh
+
+.PHONY: lint-backend
+lint-backend:
+	$(COMPOSE) -p $(PROJECT_SLUG) exec api ./scripts/lint.sh
+
+.PHONY: test-backend
+test-backend:
+	$(COMPOSE) -p $(PROJECT_SLUG) exec api pytest
+
+.PHONY: uv-lock
+uv-lock:
+	$(COMPOSE) -p $(PROJECT_SLUG) exec $(s) uv lock --check
 
 # -------------------------
 # BUILD (VERSIONED)
 # -------------------------
 build-base:
 	docker build --platform=linux/amd64 \
-		-f infra/docker/base.api.Dockerfile \
+		-f apps/api/base.Dockerfile \
 		-t $(API_BASE):latest \
 		.
 
 build-api:
 	docker build --platform=linux/amd64 \
-		-f infra/docker/api.Dockerfile \
+		-f apps/api/Dockerfile \
 		-t $(API_IMAGE):latest \
 		-t $(API_IMAGE):$(VERSION) \
 		-t $(API_IMAGE):$(GIT_SHA) \
 		.
-
-# -------------------------
-# PUSH
-# -------------------------
+		
 push-api:
 	docker push $(API_IMAGE):latest
 	docker push $(API_IMAGE):$(VERSION)
@@ -117,11 +122,3 @@ push-api:
 # RELEASE
 # -------------------------
 release: build-base build-api push-api
-
-# -------------------------
-# CLEAN
-# -------------------------
-clean:
-	@echo "Cleaning Docker system..."
-	$(COMPOSE) down -v
-	docker system prune -f

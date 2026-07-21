@@ -2,7 +2,7 @@ FROM beafdocker/notion-api-base:latest
 
 WORKDIR /app
 
-COPY apps/api/pyproject.toml apps/api/uv.lock* ./
+COPY pyproject.toml uv.lock* ./
 
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv sync --frozen --no-install-project
