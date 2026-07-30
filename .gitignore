@@ -29,36 +29,36 @@ Thumbs.db
 !.env.example
 
 # ==============================================================================
-# Frontend Workspace (apps/web)
+# Frontend Workspace (web)
 # ==============================================================================
 node_modules/
-apps/web/node_modules/
-apps/web/.next/
-apps/web/out/
-apps/web/build/
-apps/web/.pnpm-debug.log*
-apps/web/.pnpm-store
+web/node_modules/
+web/.next/
+web/out/
+web/build/
+web/.pnpm-debug.log*
+web/.pnpm-store
 
 # ==============================================================================
-# Backend Workspace (apps/api)
+# Backend Workspace (api)
 # ==============================================================================
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
-apps/api/__pycache__/
-apps/api/.venv/
+api/__pycache__/
+api/.venv/
 .venv/
-apps/api/dist/
-apps/api/build/
-apps/api/*.egg-info/
+api/dist/
+api/build/
+api/*.egg-info/
 
 # ==============================================================================
 # Playwright & Testing Artifacts
 # ==============================================================================
-apps/api/test-results/
-apps/api/playwright-report/
-apps/api/blob-report/
+api/test-results/
+api/playwright-report/
+api/blob-report/
 
 backend-context.md
 frontend-context.md

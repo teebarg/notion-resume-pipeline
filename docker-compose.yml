@@ -1,17 +1,16 @@
 services:
   web:
     build:
-      context: ./apps/web
+      context: ./web
       dockerfile: Dockerfile
-    container_name: resume_pipeline_web
     volumes:
-      - ./apps/web/:/app
+      - ./web/:/app
       - /app/node_modules
       - app-node-modules:/app/node_modules
     environment:
       - NODE_ENV=development
     env_file:
-      - ./apps/web/.env
+      - ./web/.env
     networks:
       - dev-net
     labels:
@@ -31,16 +30,15 @@ services:
 
   api:
     build:
-      context: ./apps/api
+      context: ./api
       dockerfile: dev.Dockerfile
-    container_name: resume_pipeline_api
     platform: linux/amd64 # Patch for M1 Mac
     env_file:
-      - ./apps/api/.env
+      - ./api/.env
     networks:
       - dev-net
     volumes:
-      - ./apps/api/:/app
+      - ./api/:/app
       - /app/.venv/
       - uv-cache:/root/.cache/uv
     healthcheck:
@@ -59,21 +57,6 @@ services:
       - traefik.http.routers.cva-http.entrypoints=http
       - traefik.http.routers.cva-http.middlewares=redirect-to-https
       - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
-
-  api-prod-test:
-    profiles:
-      - test # This hides the service from standard "docker compose up" commands
-    build:
-      context: ./apps/api
-      dockerfile: Dockerfile
-    container_name: resume_pipeline_api_prod
-    ports:
-      - "40003:8000"
-    environment:
-      - ENV=production
-      - REDIS_URL=redis://redis:6379/0
-    networks:
-      - dev-net
 
 networks:
   dev-net:

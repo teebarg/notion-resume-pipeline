@@ -8,16 +8,16 @@ docker-compose*
 
 # Node/Next.js ignore targets
 node_modules/
-apps/web/.next/
-apps/web/.pnpm-store
-apps/web/node_modules/
+web/.next/
+web/.pnpm-store
+web/node_modules/
 .next_cache/
 
 # Python/uv/FastAPI ignore targets
 .venv/
-apps/api/.venv/
-apps/api/.uv/
-apps/api/__pycache__
+api/.venv/
+api/.uv/
+api/__pycache__
 __pycache__/
 *.pyc
 *.pyo
