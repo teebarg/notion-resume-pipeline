@@ -53,6 +53,7 @@ STATIC_DIR.mkdir(exist_ok=True)
 # Example: http://localhost:8000/static/previews/minimal.png
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
+@app.head("/")
 @app.get("/")
 async def root() -> dict[str, str]:
     return {
