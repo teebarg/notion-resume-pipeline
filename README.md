@@ -85,46 +85,6 @@ Services are routed via Traefik:
 | Web | http://cv.localhost |
 | API | http://cv-api.localhost |
 
-### Local development (without full Docker stack)
-
-```bash
-# Terminal 1 — API
-make dev-api
-# or: cd apps/api && uvicorn app.main:app --reload --port 8000
-
-# Terminal 2 — Web
-make dev-web
-# or: cd apps/web && npm run dev
-
-# Both together
-make dev
-```
-
-**API setup**
-
-```bash
-cd apps/api
-uv sync --extra dev          # or: pip install -e ".[dev]"
-cp .env.example .env         # set NOTION_API_TOKEN, REDIS_URL
-uvicorn app.main:app --reload --port 8000
-```
-
-**Web setup**
-
-```bash
-cd apps/web
-npm install
-cp .env.example .env         # set NEXT_PUBLIC_API_URL
-npm run dev
-```
-
-**Run tests**
-
-```bash
-cd apps/api
-pytest tests/ -v
-```
-
 **Regenerate template preview images**
 
 ```bash
@@ -149,14 +109,13 @@ notion-resume-pipeline/
 │   │   │   └── main.py
 │   │   ├── scripts/                # Preview image generation
 │   │   └── tests/
+│   │   └── Dockerfile
 │   └── web/                        # Next.js dashboard
 │       ├── app/                    # App router pages & API proxy
 │       ├── components/             # UI, dashboard, export controls
 │       └── lib/                    # Types, Markdown export, storage
-├── infra/docker/                   # Dockerfiles
 ├── docker-compose.yml
 ├── Makefile
-└── package.json                    # Root dev tooling (concurrently)
 ```
 
 ## API Overview

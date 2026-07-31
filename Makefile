@@ -1,124 +1,119 @@
-# Variables
-COMPOSE := docker compose
-DOCKER_USER := beafdocker
+PROJECT_SLUG = resume-pipeline
+DOCKER_HUB := beafdocker
 
-API_BASE := $(DOCKER_USER)/notion-api-base
-API_IMAGE := $(DOCKER_USER)/notion-api
-WEB_IMAGE := $(DOCKER_USER)/notion-web
+API_BASE := $(DOCKER_HUB)/notion-api-base
+API_IMAGE := $(DOCKER_HUB)/notion-api
 
-VERSION ?= latest
-GIT_SHA := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+IMAGE_TAG := $(if $(shell git rev-parse --short HEAD 2>NUL),$(shell git rev-parse --short HEAD 2>NUL),latest)
+DOCKER_COMPOSE = docker compose -p $(PROJECT_SLUG)
 
-.PHONY: dev-web dev-api shell-dev fctx bctx previews help \
-        dev dev-build restart stop logs api-logs web-logs \
-        shell-api shell-web test build-base build-api push-api release clean
+.PHONY: previews build-api push-api release
 
 # ----------------------------
-# Development (shell)
+# Repomix Source Context for AI
 # ----------------------------
-
-dev-web:
-	cd apps/web && npm run dev
-
-dev-api:
-	cd apps/api && .venv/bin/uvicorn app.main:app --reload --port 8000
-
-shell-dev:
-	npx concurrently \
-		"cd apps/api && .venv/bin/uvicorn app.main:app --reload --port 8000" \
-		"cd apps/web && npm run dev"
-
-# ----------------------------
-# Context for AI
-# ----------------------------
+.PHONY: fctx bctx ctx-all
 fctx:
-	cd apps/web && npx repomix
+	@cd web && npx repomix
 
 bctx:
-	cd apps/api && npx repomix
+	@cd api && npx repomix
+
+ctx-all: fctx bctx
 
 # ----------------------------
 # Scripts
 # ----------------------------
 previews:
 	@echo "Re-generating template asset blueprints..."
-	cd apps/api && .venv/bin/python scripts/generate_previews.py $(if $(TEMPLATE),--template $(TEMPLATE))
+	cd api && .venv/bin/python scripts/generate_previews.py $(if $(TEMPLATE),--template $(TEMPLATE))
 
 
 # -------------------------
 # DEV / DOCKER COMPOSE
 # -------------------------
-dev:
-	$(COMPOSE) up
+.PHONY: build
+build:
+	$(DOCKER_COMPOSE) build
 
-dev-build:
-	$(COMPOSE) up --build
+.PHONY: build-no-cache
+build-no-cache:
+	$(DOCKER_COMPOSE) build --no-cache
 
-restart:
-	@echo "Restarting services..."
-	$(COMPOSE) down && $(COMPOSE) up --build
+.PHONY: up
+up:
+	$(DOCKER_COMPOSE) up
 
+.PHONY: update
+update:
+	$(DOCKER_COMPOSE) up -d --force-recreate $(s)
+
+.PHONY: update-all
+update-all:
+	$(DOCKER_COMPOSE) up -d --force-recreate
+
+.PHONY: prod-test
+prod-test:
+	$(DOCKER_COMPOSE) --profile test up --build
+
+.PHONY: stop
 stop:
-	$(COMPOSE) down
+	$(DOCKER_COMPOSE) down
 
+# ==========================================
+# Debugging
+# ==========================================
+.PHONY: logs
 logs:
-	$(COMPOSE) logs -f
+	$(DOCKER_COMPOSE) logs -f $(s)
 
-api-logs:
-	$(COMPOSE) logs -f api
-
-web-logs:
-	$(COMPOSE) logs -f web
-
-# -------------------------
-# SHELL ACCESS
-# -------------------------
-shell-api:
-	$(COMPOSE) exec api bash
-
+.PHONY: shell-web
 shell-web:
-	$(COMPOSE) exec web sh
+	$(DOCKER_COMPOSE) exec web sh
 
-# -------------------------
-# TEST
-# -------------------------
-test:
-	$(COMPOSE) exec api pytest
+.PHONY: shell-api
+shell-api:
+	$(DOCKER_COMPOSE) exec api /bin/bash
+
+.PHONY: install
+install:
+	$(DOCKER_COMPOSE) exec api uv pip install $(package)
+
+.PHONY: prep
+prep:
+	$(DOCKER_COMPOSE) exec api ./scripts/prestart.sh
+
+.PHONY: lint-backend
+lint-backend:
+	$(DOCKER_COMPOSE) exec api ./scripts/lint.sh
+
+.PHONY: test-backend
+test-backend:
+	$(DOCKER_COMPOSE) exec api pytest
+
+.PHONY: uv-lock
+uv-lock:
+	$(DOCKER_COMPOSE) exec $(s) uv lock --check
 
 # -------------------------
 # BUILD (VERSIONED)
 # -------------------------
-build-base:
-	docker build \
-		-f infra/docker/base.api.Dockerfile \
-		-t $(API_BASE):latest \
-		.
-
 build-api:
-	docker build \
-		-f infra/docker/api.Dockerfile \
+	docker build --platform=linux/amd64 \
+		-f api/Dockerfile \
 		-t $(API_IMAGE):latest \
-		-t $(API_IMAGE):$(VERSION) \
-		-t $(API_IMAGE):$(GIT_SHA) \
-		.
+		-t $(API_IMAGE):$(IMAGE_TAG) \
+		./api
 
-# -------------------------
-# PUSH
-# -------------------------
+.PHONY: run-api-local
+run-api-local:
+	docker run --rm -it \
+		--platform linux/amd64 \
+		--network dev-net \
+		-p 8000:8000 \
+		--env-file api/.env \
+		$(API_IMAGE):$(IMAGE_TAG) \
+
 push-api:
 	docker push $(API_IMAGE):latest
-	docker push $(API_IMAGE):$(VERSION)
-	docker push $(API_IMAGE):$(GIT_SHA)
-
-# -------------------------
-# RELEASE
-# -------------------------
-release: build-base build-api push-api
-
-# -------------------------
-# CLEAN
-# -------------------------
-clean:
-	@echo "Cleaning Docker system..."
-	$(COMPOSE) down -v
-	docker system prune -f
+	docker push $(API_IMAGE):$(IMAGE_TAG)

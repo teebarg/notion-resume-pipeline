@@ -6,16 +6,15 @@ from app.core.cache import add_cache_headers
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from redis.asyncio import Redis
 from pathlib import Path
 
 from app.config import settings
 from app.core.logging import close_http_client, get_logger, setup_logging
 from app.core.redis import close_redis, init_redis, get_redis
 from app.routers import api_router
-from redis.asyncio import Redis
 
 logger = get_logger(__name__)
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
@@ -39,8 +38,7 @@ app = FastAPI(
 app.middleware("http")(add_cache_headers)
 app.add_middleware(
     CORSMiddleware,
-    # allow_origins=settings.BACKEND_CORS_ORIGINS,
-    allow_origins=["*"],
+    allow_origins=settings.BACKEND_CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -55,6 +53,7 @@ STATIC_DIR.mkdir(exist_ok=True)
 # Example: http://localhost:8000/static/previews/minimal.png
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
+@app.head("/")
 @app.get("/")
 async def root() -> dict[str, str]:
     return {
@@ -63,6 +62,7 @@ async def root() -> dict[str, str]:
     }
 
 
+@app.head("/health", tags=["System"])
 @app.get("/health", tags=["System"])
 async def health_check(redis: Redis = Depends(get_redis)) -> HealthResponse:
     """

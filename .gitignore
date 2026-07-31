@@ -1,7 +1,64 @@
-# Common ignores
-node_modules
-.next/
+# ==============================================================================
+# System & IDE Artifacts
+# ==============================================================================
 .DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ==============================================================================
+# Docker & Local Caches
+# ==============================================================================
+.next_cache/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.uv/
+
+# ==============================================================================
+# Environment Variables & Secrets (NEVER COMMIT THESE)
+# ==============================================================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env.*
+!.env.example
+
+# ==============================================================================
+# Frontend Workspace (web)
+# ==============================================================================
+node_modules/
+web/node_modules/
+web/.next/
+web/out/
+web/build/
+web/.pnpm-debug.log*
+web/.pnpm-store
+
+# ==============================================================================
+# Backend Workspace (api)
+# ==============================================================================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+api/__pycache__/
+api/.venv/
+.venv/
+api/dist/
+api/build/
+api/*.egg-info/
+
+# ==============================================================================
+# Playwright & Testing Artifacts
+# ==============================================================================
+api/test-results/
+api/playwright-report/
+api/blob-report/
 
 backend-context.md
 frontend-context.md

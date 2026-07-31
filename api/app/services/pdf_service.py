@@ -17,7 +17,19 @@ class PDFService:
 
     def _html_to_pdf_sync(self, html: str) -> bytes:
         with sync_playwright() as p:
-            browser = p.chromium.launch()
+            browser = p.chromium.launch(
+                headless=True,
+                args=[
+                    "--no-sandbox",
+                    "--disable-setuid-sandbox",
+                    "--disable-dev-shm-usage",  # Force Chromium to use system memory instead of /dev/shm
+                    "--disable-accelerated-2d-canvas",
+                    "--disable-gpu",            # Save RAM by disabling GPU emulation
+                    "--no-first-run",
+                    "--no-zygote",
+                    "--single-process"          # Reduce multi-process overhead (saves ~100MB RAM)
+                ]
+            )
             page = browser.new_page()
             page.set_content(html, wait_until="networkidle")
             pdf_bytes = page.pdf(
@@ -34,15 +46,15 @@ class PDFService:
         return await loop.run_in_executor(None, self._html_to_pdf_sync, html)
 
     async def generate_resume_pdf(
-        self, 
-        page_id: str, 
-        template: TemplateId, 
+        self,
+        page_id: str,
+        template: TemplateId,
         variant: str | None = None
     ) -> bytes:
         resume = await self.notion_service.get_cached_resume(page_id=page_id)
         html = self.resume_service.render(
-            resume=resume, 
-            template_id=template, 
+            resume=resume,
+            template_id=template,
             variant_id=variant
         )
         pdf_bytes = await self._html_to_pdf(html)
@@ -50,10 +62,10 @@ class PDFService:
 
     async def sync_pdf_pipeline(self, page_id: str, template: TemplateId = "minimal", variant: str | None = None) -> str:
         """
-        Renders the PDF using latest configurations, forces update to Supabase, 
+        Renders the PDF using latest configurations, forces update to Supabase,
         and returns the synchronized URL.
         """
         pdf_bytes = await self.generate_resume_pdf(page_id, template, variant)
-        
+
         public_url = await self.storage_service.upload_resume_pdf(page_id, pdf_bytes)
         return public_url

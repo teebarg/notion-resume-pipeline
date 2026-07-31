@@ -1,51 +1,67 @@
 services:
   web:
     build:
-      context: .
-      dockerfile: infra/docker/web.Dockerfile
+      context: ./web
+      dockerfile: Dockerfile
     volumes:
-      - ./apps/web:/app
-      - /app/node_modules             # anonymous volume so container's node_modules win
+      - ./web/:/app
+      - /app/node_modules
+      - app-node-modules:/app/node_modules
     environment:
       - NODE_ENV=development
     env_file:
-      - ./apps/web/.env
-    ports:
-      - "40000:3000"
+      - ./web/.env
     networks:
       - dev-net
     labels:
       - traefik.enable=true
-      - traefik.http.routers.cv.rule=Host(`cv.localhost`)
-      - traefik.http.routers.cv.entrypoints=web
+      - traefik.docker.network=dev-net
       - traefik.http.services.cv.loadbalancer.server.port=3000
+      - traefik.http.routers.cv.rule=Host(`cv.localhost`)
+      - traefik.http.routers.cv.entrypoints=https
+      - traefik.http.routers.cv.tls=true
+      - traefik.http.routers.cv-http.rule=Host(`cv.localhost`)
+      - traefik.http.routers.cv-http.entrypoints=http
+      - traefik.http.routers.cv-http.middlewares=redirect-to-https
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+    depends_on:
+      api:
+        condition: service_healthy
 
   api:
     build:
-      context: .
-      dockerfile: infra/docker/api.dev.Dockerfile
+      context: ./api
+      dockerfile: dev.Dockerfile
     platform: linux/amd64 # Patch for M1 Mac
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
     env_file:
-      - ./apps/api/.env
-    ports:
-      - "40001:8000"
+      - ./api/.env
     networks:
       - dev-net
     volumes:
-      - ./apps/api/:/app
-      - /app/.venv
+      - ./api/:/app
+      - /app/.venv/
+      - uv-cache:/root/.cache/uv
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 30
     labels:
       - traefik.enable=true
-      - traefik.http.routers.cv-api.rule=Host(`cv-api.localhost`)
-      - traefik.http.routers.cv-api.entrypoints=web
-      - traefik.http.services.cv-api.loadbalancer.server.port=8000
+      - traefik.docker.network=dev-net
+      - traefik.http.services.cva.loadbalancer.server.port=8000
+      - traefik.http.routers.cva.rule=Host(`cva.localhost`)
+      - traefik.http.routers.cva.entrypoints=https
+      - traefik.http.routers.cva.tls=true
+      - traefik.http.routers.cva-http.rule=Host(`cva.localhost`)
+      - traefik.http.routers.cva-http.entrypoints=http
+      - traefik.http.routers.cva-http.middlewares=redirect-to-https
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
 
 networks:
   dev-net:
     external: true
+
+volumes:
+  app-node-modules:
+  uv-cache:

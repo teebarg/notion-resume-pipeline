@@ -1,7 +1,7 @@
 """
 Unit tests for Notion parser and resume mapper.
 
-Run: pytest apps/api/tests/test_notion_pipeline.py -v
+Run: pytest api/tests/test_notion_pipeline.py -v
 """
 
 import pytest

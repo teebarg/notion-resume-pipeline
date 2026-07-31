@@ -19,7 +19,7 @@ app/
 ## Quick start
 
 ```bash
-cd apps/api
+cd api
 python -m venv .venv
 .venv\Scripts\activate   # Windows
 pip install -e ".[dev]"
