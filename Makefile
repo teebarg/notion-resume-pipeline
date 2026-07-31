@@ -7,7 +7,7 @@ API_IMAGE := $(DOCKER_HUB)/notion-api
 IMAGE_TAG := $(if $(shell git rev-parse --short HEAD 2>NUL),$(shell git rev-parse --short HEAD 2>NUL),latest)
 DOCKER_COMPOSE = docker compose -p $(PROJECT_SLUG)
 
-.PHONY: previews build-base build-api push-api release
+.PHONY: previews build-api push-api release
 
 # ----------------------------
 # Repomix Source Context for AI
@@ -98,19 +98,12 @@ uv-lock:
 # -------------------------
 # BUILD (VERSIONED)
 # -------------------------
-build-base:
-	docker build --platform=linux/amd64 \
-		-f api/base.Dockerfile \
-		-t $(API_BASE):latest \
-		.
-
 build-api:
 	docker build --platform=linux/amd64 \
 		-f api/Dockerfile \
 		-t $(API_IMAGE):latest \
 		-t $(API_IMAGE):$(IMAGE_TAG) \
-		.
-
+		./api
 
 .PHONY: run-api-local
 run-api-local:
@@ -124,8 +117,3 @@ run-api-local:
 push-api:
 	docker push $(API_IMAGE):latest
 	docker push $(API_IMAGE):$(IMAGE_TAG)
-
-# -------------------------
-# RELEASE
-# -------------------------
-release: build-base build-api push-api

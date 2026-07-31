@@ -6,43 +6,22 @@ from app.core.cache import add_cache_headers
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from redis.asyncio import Redis
 from pathlib import Path
 
 from app.config import settings
 from app.core.logging import close_http_client, get_logger, setup_logging
 from app.core.redis import close_redis, init_redis, get_redis
 from app.routers import api_router
-from redis.asyncio import Redis
-from playwright.async_api import async_playwright
 
 logger = get_logger(__name__)
-
-state = {}
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     setup_logging()
     await init_redis()
 
-    state["playwright"] = await async_playwright().start()
-    state["browser"] = await state["playwright"].chromium.launch(
-        headless=True,
-        args=[
-            "--no-sandbox",
-            "--disable-setuid-sandbox",
-            "--disable-dev-shm-usage",  # Force Chromium to use system memory instead of /dev/shm
-            "--disable-accelerated-2d-canvas",
-            "--disable-gpu",            # Save RAM by disabling GPU emulation
-            "--no-first-run",
-            "--no-zygote",
-            "--single-process"          # Reduce multi-process overhead (saves ~100MB RAM)
-        ]
-    )
-
     yield
-
-    await state["browser"].close()
-    await state["playwright"].stop()
 
     await close_redis()
     await close_http_client()

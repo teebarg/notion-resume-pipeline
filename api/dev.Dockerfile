@@ -1,17 +1,3 @@
-# FROM beafdocker/notion-api-base:latest
-
-# WORKDIR /app
-
-# COPY pyproject.toml uv.lock* ./
-
-# RUN --mount=type=cache,target=/root/.cache/uv \
-#     uv sync --frozen --no-install-project
-
-# EXPOSE 8000
-
-# CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
-
-# Fix: Added "-bookworm" to the slim tag name
 FROM ghcr.io/astral-sh/uv:python3.11-bookworm-slim
 
 WORKDIR /app
@@ -35,5 +21,3 @@ EXPOSE 8000
 
 # Run with uv and enable live code reloading
 CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
-
-
