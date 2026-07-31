@@ -38,8 +38,7 @@ app = FastAPI(
 app.middleware("http")(add_cache_headers)
 app.add_middleware(
     CORSMiddleware,
-    # allow_origins=settings.BACKEND_CORS_ORIGINS,
-    allow_origins=["*"],
+    allow_origins=settings.BACKEND_CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -62,6 +61,7 @@ async def root() -> dict[str, str]:
     }
 
 
+@app.head("/health", tags=["System"])
 @app.get("/health", tags=["System"])
 async def health_check(redis: Redis = Depends(get_redis)) -> HealthResponse:
     """

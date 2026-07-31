@@ -1,9 +1,9 @@
-from app.core.deps import get_job_service
 from fastapi import APIRouter, Depends, HTTPException
 
 from app.schemas.common import ErrorResponse
 from app.schemas.jobs import ExportJobRequest, JobStatusResponse
 from app.services.job_service import JobService
+from app.core.deps import get_job_service
 
 router = APIRouter()
 
